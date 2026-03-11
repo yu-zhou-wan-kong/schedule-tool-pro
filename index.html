@@ -2,14 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- 核心适配：强制视口宽度等于设备宽度，禁止用户缩放，适配刘海屏/全面屏 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <!-- 适配iOS状态栏 -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <!-- 禁用Android电话/邮箱自动识别 -->
-    <meta name="format-detection" content="telephone=no, email=no">
-    <title>月度排班 · 窄屏适配</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>排班日历 · 手机完美适配</title>
     <style>
         * {
             margin: 0;
@@ -17,28 +11,18 @@
             box-sizing: border-box;
             font-family: system-ui, -apple-system, 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', sans-serif;
         }
-        /* 适配刘海屏/全面屏，避免内容被状态栏遮挡 */
         body {
             background: #f0f2f5;
-            padding: env(safe-area-inset-top, 8px) 8px env(safe-area-inset-bottom, 8px) 8px;
+            padding: 8px;
             min-height: 100vh;
-            /* 取消水平居中，让内容完全贴合屏幕宽度 */
-            display: block;
-            /* 禁止页面整体滚动（仅日历横向滚动） */
-            overflow-x: hidden;
-            overflow-y: auto;
         }
         .card {
-            /* 移除最大宽度限制，让卡片占满屏幕宽度 */
             width: 100%;
             background: white;
             border-radius: 20px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.1);
             padding: 14px 10px;
-            /* 适配底部安全区 */
-            margin-bottom: env(safe-area-inset-bottom, 10px);
         }
-        /* 头部区域 - 更紧凑 */
         .header {
             display: flex;
             align-items: center;
@@ -54,7 +38,6 @@
             display: flex;
             align-items: center;
             gap: 4px;
-            flex-wrap: wrap;
         }
         h1 small {
             font-size: 10px;
@@ -65,7 +48,6 @@
             border-radius: 16px;
             white-space: nowrap;
         }
-        /* 设置按钮 - 更小，适配触摸 */
         .settings-btn {
             background: white;
             border: 1.5px solid #b8ccdd;
@@ -73,32 +55,15 @@
             font-weight: 500;
             padding: 5px 10px;
             border-radius: 20px;
-            cursor: pointer;
             font-size: 12px;
-            transition: 0.15s;
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-            white-space: nowrap;
-            /* 增加触摸区域 */
             min-height: 30px;
-            min-width: 60px;
         }
-        .settings-btn:hover {
-            background: #edf5ff;
-            border-color: #0077ff;
-        }
-        .settings-btn svg {
-            width: 12px;
-            height: 12px;
-        }
-        /* 主查询面板 - 更窄，适配触摸 */
         .selector-panel {
             display: flex;
             flex-direction: column;
             gap: 8px;
             background: #f9fcff;
-            padding: 10px 10px;
+            padding: 10px;
             border-radius: 18px;
             margin-bottom: 14px;
             border: 1px solid #d4e2f0;
@@ -107,206 +72,56 @@
             width: 100%;
         }
         .select-group label {
-            display: block;
             font-size: 11px;
-            font-weight: 500;
             color: #2c3e50;
             margin-bottom: 3px;
-            letter-spacing: 0.2px;
+            display: block;
         }
         .select-group select,
         .select-group input {
             width: 100%;
-            padding: 10px 12px; /* 增加内边距，扩大触摸区域 */
+            padding: 8px 12px;
             border: 1.5px solid #d9e2ec;
             border-radius: 20px;
             font-size: 13px;
-            background: white;
-            transition: 0.2s;
-            outline: none;
-            cursor: pointer;
-            -webkit-appearance: none;
-            appearance: none;
-            /* 适配移动端触摸 */
             min-height: 40px;
         }
-        .select-group select {
-            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2210%22%20height%3D%2210%22%20viewBox%3D%220%200%2010%2010%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M5%207.5L2%203h6l-3%204.5z%22%2F%3E%3C%2Fsvg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 9px;
-        }
-        .select-group select:focus,
-        .select-group input:focus {
-            border-color: #0077ff;
-            box-shadow: 0 0 0 2px rgba(0,119,255,0.15);
-        }
 
-        /* 设置浮层 - 全屏适配 */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            /* 适配安全区 */
-            padding: env(safe-area-inset-top, 10px) env(safe-area-inset-right, 10px) env(safe-area-inset-bottom, 10px) env(safe-area-inset-left, 10px);
-            /* 禁止浮层内滚动影响底层 */
-            overflow: hidden;
-        }
-        .modal-card {
-            background: white;
-            /* 浮层占满屏幕宽度（留边） */
-            width: 100%;
-            max-width: none;
-            max-height: 90vh;
-            border-radius: 24px;
-            padding: 18px 14px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            animation: fadeIn 0.2s;
-            overflow-y: auto;
-            /* 适配底部安全区 */
-            padding-bottom: env(safe-area-inset-bottom, 20px);
-        }
-        @keyframes fadeIn { from { opacity:0; transform:scale(0.96); } to { opacity:1; transform:scale(1); } }
-        .modal-card h2 {
-            font-size: 18px;
-            color: #00284d;
-            margin-bottom: 6px;
-        }
-        .rule-hint {
-            background: #e8f0fe;
-            padding: 10px 12px;
-            border-radius: 18px;
-            color: #144b7a;
-            font-size: 12px;
-            margin: 6px 0 12px;
-            text-align: center;
-            font-weight: 500;
-            border-left: 4px solid #283593;
-        }
-        .base-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin: 12px 0 14px;
-            max-height: 45vh;
-            overflow-y: auto;
-            padding-right: 4px;
-        }
-        .base-row {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: #f3f9ff;
-            padding: 7px 10px;
-            border-radius: 24px;
-            border: 1px solid #d5e3f0;
-            flex-wrap: wrap;
-        }
-        .base-row label {
-            font-weight: 600;
-            color: #1f4970;
-            min-width: 34px;
-            font-size: 13px;
-        }
-        .base-row input[type="date"] {
-            flex: 1;
-            min-width: 130px;
-            padding: 7px 10px;
-            border: 1px solid #c2d6e8;
-            border-radius: 20px;
-            font-size: 12px;
-            background: white;
-            /* 扩大触摸区域 */
-            min-height: 38px;
-        }
-        .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-            margin-top: 12px;
-            flex-wrap: wrap;
-        }
-        .save-btn, .cancel-btn {
-            padding: 10px 16px; /* 增加内边距 */
-            border-radius: 22px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            font-size: 13px;
-            flex: 1 1 auto;
-            /* 扩大触摸区域 */
-            min-height: 42px;
-        }
-        .save-btn {
-            background: #0077ff;
-            color: white;
-        }
-        .cancel-btn {
-            background: transparent;
-            border: 1.5px solid #a1b9cf;
-            color: #2b4b6f;
-        }
-
-        /* 日历表格容器 - 优化横向滚动体验 */
+        /* 🔥 关键：手机一屏显示，禁止横向滚动 */
         .calendar-wrapper {
-            background: #ffffff;
-            border-radius: 18px;
-            padding: 4px 0 2px 0;
-            overflow-x: auto;
-            /* 移除左右负边距，避免内容溢出 */
-            margin: 0;
-            -webkit-overflow-scrolling: touch; /* 开启iOS弹性滚动 */
-            /* 隐藏滚动条（保留功能） */
-            scrollbar-width: none;
-        }
-        .calendar-wrapper::-webkit-scrollbar {
-            display: none;
+            width: 100%;
+            overflow: hidden; 
         }
         .calendar-table {
             width: 100%;
             border-collapse: collapse;
-            /* 最小宽度适配：根据屏幕宽度动态调整 */
-            min-width: calc(100vw - 20px);
             table-layout: fixed;
         }
         .calendar-table th {
-            padding: 10px 1px 6px 1px;
-            font-weight: 600;
-            font-size: 13px;
+            padding: 6px 2px;
+            font-size: 11px;
             color: #1e3b5c;
             border-bottom: 2px solid #cbd6e4;
-            background: white;
+            font-weight: 600;
         }
         .calendar-table td {
             border: 1px solid #ecf3fa;
             text-align: center;
-            vertical-align: middle;
-            padding: 5px 1px;
-            background: white;
-            transition: background 0.1s;
-            font-size: 12px;
-            /* 增加单元格最小高度，优化触摸 */
-            min-height: 60px;
+            padding: 4px 2px;
+            font-size: 11px;
+            width: 14.28%;
         }
         .date-num {
             font-weight: 600;
-            font-size: 14px;
-            color: #1e2f3f;
+            font-size: 12px;
             margin-bottom: 2px;
         }
         .schedule-badge {
             display: inline-block;
-            padding: 2px 4px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 500;
-            min-width: 42px;
-            text-align: center;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            padding: 1px 2px;
+            border-radius: 10px;
+            font-size: 9px;
+            min-width: 32px;
         }
         .badge-work { background: #e2f0ff; color: #0057b3; }
         .badge-day  { background: #e6f7e6; color: #1e7a1e; }
@@ -320,94 +135,110 @@
             color: #d45a00;
         }
         .today-tag {
-            display: inline-block;
+            font-size: 7px;
             background: #ff9500;
             color: white;
-            font-size: 8px;
-            font-weight: 600;
-            padding: 1px 4px;
-            border-radius: 12px;
-            margin-left: 2px;
-            letter-spacing: 0.2px;
-            vertical-align: middle;
+            padding: 0 3px;
+            border-radius: 6px;
         }
         .weekend .date-num {
             color: #d32f2f;
         }
         .tips-footer {
             margin-top: 14px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
+            text-align: center;
             color: #5e7a99;
             background: #f3f9ff;
-            padding: 10px 12px;
+            padding: 10px;
             border-radius: 22px;
             font-size: 11px;
         }
         .legend {
             display: flex;
-            gap: 12px;
+            gap: 8px;
             flex-wrap: wrap;
             justify-content: center;
-        }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            margin-bottom: 4px;
         }
         .color-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 12px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
         }
         .dot-work { background: #e2f0ff; border: 1px solid #0077ff; }
         .dot-day { background: #e6f7e6; border: 1px solid #1e7a1e; }
         .dot-night { background: #e3eafc; border: 1px solid #283593; }
         .dot-rest { background: #f2f2f2; border: 1px solid #8f9eb0; }
 
-        /* 超小屏优化 (如 iPhone SE/小屏安卓) */
-        @media (max-width: 360px) {
-            .card { padding: 12px 8px; }
-            h1 { font-size: 17px; }
-            .settings-btn { padding: 4px 8px; font-size: 11px; min-height: 28px; min-width: 55px; }
-            .calendar-table td { min-height: 55px; }
-            .schedule-badge { min-width: 38px; font-size: 10px; padding: 2px 2px; }
-            .base-row { flex-direction: column; align-items: flex-start; padding: 10px; }
-            .base-row label { min-width: auto; margin-bottom: 4px; }
-            .base-row input[type="date"] { width: 100%; min-width: 0; }
-            .modal-actions button { width: 100%; margin-bottom: 8px; }
-            .modal-actions button:last-child { margin-bottom: 0; }
+        /* 弹窗简化适配 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 10px;
         }
-
-        /* 大屏手机优化 (如 iPhone 14+/安卓大屏) */
-        @media (min-width: 420px) {
-            .calendar-table { min-width: 400px; }
-            .card { padding: 16px 12px; }
-            h1 { font-size: 20px; }
-            .select-group select, .select-group input { font-size: 14px; }
+        .modal-card {
+            background: white;
+            width: 100%;
+            border-radius: 24px;
+            padding: 18px 14px;
+        }
+        .base-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #f3f9ff;
+            padding: 7px 10px;
+            border-radius: 24px;
+            margin-bottom: 8px;
+        }
+        .base-row label {
+            min-width: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1f4970;
+        }
+        .base-row input {
+            flex: 1;
+            padding: 6px;
+            border-radius: 20px;
+            border: 1px solid #c2d6e8;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .save-btn, .cancel-btn {
+            flex: 1;
+            padding: 8px;
+            border-radius: 22px;
+            font-weight: 600;
+        }
+        .save-btn {
+            background: #0077ff;
+            color: white;
+            border: none;
+        }
+        .cancel-btn {
+            background: transparent;
+            border: 1.5px solid #a1b9cf;
         }
     </style>
 </head>
 <body>
+
 <div class="card">
     <div class="header">
-        <h1>
-            🗓️ 排班日历
-            <small>四值零点 2026-03-14</small>
-        </h1>
-        <button class="settings-btn" onclick="openSettingsModal()">
-            <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H5.78a1.65 1.65 0 0 0-1.51 1 1.65 1.65 0 0 0 .33 1.82l.04.04A10 10 0 0 0 12 17.66a10 10 0 0 0 6.36-2.62l.04-.04z"></path>
-                <path d="M16.5 9.4V6.5a4.5 4.5 0 1 0-9 0v2.9"></path>
-            </svg>
-            设置
-        </button>
+        <h1>🗓️ 排班日历 <small>四值零点 2026-03-14</small></h1>
+        <button class="settings-btn" onclick="openSettingsModal()">设置</button>
     </div>
 
-    <!-- 查询面板 -->
     <div class="selector-panel">
         <div class="select-group">
             <label>👥 运行值</label>
@@ -425,42 +256,39 @@
         </div>
     </div>
 
-    <!-- 日历容器 -->
-    <div id="calendarContainer" class="calendar-wrapper">
+    <div class="calendar-wrapper">
         <table class="calendar-table" id="calendarTable">
-            <thead><tr><th>周一</th><th>周二</th><th>周三</th><th>周四</th><th>周五</th><th>周六</th><th>周日</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th><th>日</th>
+                </tr>
+            </thead>
             <tbody id="calendarBody"></tbody>
         </table>
-        <div style="text-align:center; padding: 20px; color:#aaa; font-size:12px;" id="placeholderMsg">加载排班数据...</div>
     </div>
 
-    <!-- 图例 -->
     <div class="tips-footer">
         <div class="legend">
-            <span class="legend-item"><span class="color-dot dot-work"></span> 中班</span>
-            <span class="legend-item"><span class="color-dot dot-day"></span> 白班</span>
-            <span class="legend-item"><span class="color-dot dot-night"></span> 零点</span>
-            <span class="legend-item"><span class="color-dot dot-rest"></span> 休息</span>
+            <span><span class="color-dot dot-work"></span> 中班</span>
+            <span><span class="color-dot dot-day"></span> 白班</span>
+            <span><span class="color-dot dot-night"></span> 零点</span>
+            <span><span class="color-dot dot-rest"></span> 休息</span>
         </div>
-        <div>🟡 橙色底 = 今天 · 10天周期</div>
+        🟡 橙色 = 今天
     </div>
 </div>
 
-<!-- 设置浮层 -->
 <div class="modal-overlay" id="settingsModal" onclick="if(event.target===this) closeSettingsModal()">
     <div class="modal-card" onclick="event.stopPropagation()">
-        <h2>📌 设置第一个零点</h2>
-        <div class="rule-hint">
-            🌙 每个值的第一个零点日期<br>⚡ 修改任意值，其余自动 ±2天
+        <h3>📌 设置第一个零点</h3>
+        <div style="background:#e8f0fe;padding:8px;margin:10px 0;border-radius:12px;text-align:center;font-size:12px;">
+            🌙 修改任意值，其余自动 ±2天
         </div>
-        <div class="base-grid" id="baseInputsGrid">
-            <!-- 动态生成 -->
-        </div>
+        <div id="baseInputsGrid"></div>
         <div class="modal-actions">
             <button class="cancel-btn" onclick="closeSettingsModal()">取消</button>
             <button class="save-btn" onclick="saveAllBaseDates()">保存</button>
         </div>
-        <p style="font-size:10px; color:#8ca3b9; margin-top:12px;">* 偏移量6，周期10天</p>
     </div>
 </div>
 
@@ -471,7 +299,6 @@
         
         function calculateBase1FromBase4(base4Str) {
             const base4 = new Date(base4Str);
-            base4.setHours(0,0,0,0);
             base4.setDate(base4.getDate() - 6);
             const y = base4.getFullYear();
             const m = String(base4.getMonth() + 1).padStart(2, '0');
@@ -484,29 +311,19 @@
         function loadFullConfigFromStorage() {
             try {
                 const stored = localStorage.getItem('scheduleFullConfig_zero_preset4');
-                if (stored) {
-                    const parsed = JSON.parse(stored);
-                    if (parsed && typeof parsed === 'object' && parsed[1] && parsed[2]) {
-                        return parsed;
-                    }
-                }
+                if (stored) return JSON.parse(stored);
             } catch (e) {}
             return generateFullConfigFromBase1Zero(DEFAULT_BASE1_ZERO);
         }
 
         function generateFullConfigFromBase1Zero(base1ZeroStr) {
             const base1 = new Date(base1ZeroStr);
-            base1.setHours(0,0,0,0);
             const config = {};
             for (let v = 1; v <= 5; v++) {
-                const offsetDays = (v - 1) * 2;
                 const d = new Date(base1);
-                d.setDate(d.getDate() + offsetDays);
-                const y = d.getFullYear();
-                const m = String(d.getMonth() + 1).padStart(2, '0');
-                const day = String(d.getDate()).padStart(2, '0');
+                d.setDate(base1.getDate() + (v - 1) * 2);
                 config[v] = {
-                    date: `${y}-${m}-${day}`,
+                    date: `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,
                     cycleOffset: OFFSET_FIXED
                 };
             }
@@ -514,34 +331,21 @@
         }
 
         function regenerateConfigFromOneValue(changedValue, newDateStr) {
-            const baseDate = new Date(newDateStr);
-            baseDate.setHours(0,0,0,0);
             const newConfig = {};
-
-            newConfig[changedValue] = {
-                date: newDateStr,
-                cycleOffset: OFFSET_FIXED
-            };
-
+            newConfig[changedValue] = { date: newDateStr, cycleOffset: OFFSET_FIXED };
             for (let v = changedValue + 1; v <= 5; v++) {
-                const prevDate = new Date(newConfig[v-1].date);
-                prevDate.setDate(prevDate.getDate() + 2);
-                const y = prevDate.getFullYear();
-                const m = String(prevDate.getMonth() + 1).padStart(2, '0');
-                const d = String(prevDate.getDate()).padStart(2, '0');
+                const prev = new Date(newConfig[v-1].date);
+                prev.setDate(prev.getDate() + 2);
                 newConfig[v] = {
-                    date: `${y}-${m}-${d}`,
+                    date: `${prev.getFullYear()}-${String(prev.getMonth()+1).padStart(2,'0')}-${String(prev.getDate()).padStart(2,'0')}`,
                     cycleOffset: OFFSET_FIXED
                 };
             }
             for (let v = changedValue - 1; v >= 1; v--) {
-                const nextDate = new Date(newConfig[v+1].date);
-                nextDate.setDate(nextDate.getDate() - 2);
-                const y = nextDate.getFullYear();
-                const m = String(nextDate.getMonth() + 1).padStart(2, '0');
-                const d = String(nextDate.getDate()).padStart(2, '0');
+                const next = new Date(newConfig[v+1].date);
+                next.setDate(next.getDate() - 2);
                 newConfig[v] = {
-                    date: `${y}-${m}-${d}`,
+                    date: `${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}-${String(next.getDate()).padStart(2,'0')}`,
                     cycleOffset: OFFSET_FIXED
                 };
             }
@@ -556,48 +360,34 @@
 
         function getScheduleByDate(targetDate, value) {
             const config = baseDateConfig[value];
-            if (!config) return { schedule: '未知', isRest: false };
             const baseZeroDate = new Date(config.date);
-            baseZeroDate.setHours(0,0,0,0);
             const t = new Date(targetDate);
-            t.setHours(0,0,0,0);
-            const timeDiff = t - baseZeroDate;
-            const dayDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-            const basePos = 7;
-            const cyclePos = ((basePos - 1 + dayDiff) % 10 + 10) % 10 + 1;
+            const dayDiff = Math.floor((t - baseZeroDate) / 86400000);
+            const cyclePos = ((6 + dayDiff) % 10 + 10) % 10 + 1;
 
-            let schedule = '';
-            let isRest = false;
+            let schedule = '休息';
             switch(cyclePos) {
                 case 1: case 2: schedule = '中班'; break;
-                case 3: case 6: case 9: case 10: schedule = '休息'; isRest = true; break;
                 case 4: case 5: schedule = '白班'; break;
                 case 7: case 8: schedule = '零点'; break;
-                default: schedule = '休息'; isRest = true;
             }
-            return { schedule, isRest };
+            return { schedule };
         }
 
         function getTodayDateStr() {
             const d = new Date();
-            const y = d.getFullYear();
-            const m = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            return `${y}-${m}-${day}`;
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         }
 
         function renderMonthCalendar() {
             const selectedValue = document.getElementById('scheduleValue').value;
-            const monthStr = document.getElementById('monthPicker').value;
-            if (!monthStr) return;
-            const [year, month] = monthStr.split('-').map(Number);
-
+            const [year, month] = document.getElementById('monthPicker').value.split('-');
             const firstDay = new Date(year, month - 1, 1);
             const lastDay = new Date(year, month, 0);
             const daysInMonth = lastDay.getDate();
 
-            let firstWeekday = firstDay.getDay();
-            let startCol = (firstWeekday === 0) ? 6 : firstWeekday - 1;
+            let firstWeekday = firstDay.getDay() || 7;
+            let startCol = firstWeekday - 1;
 
             const rows = [];
             let currentDay = 1;
@@ -607,107 +397,59 @@
                 const row = [];
                 for (let c = 0; c < 7; c++) {
                     if (r === 0 && c < startCol) {
-                        row.push({ day: 0, dateObj: null, dateStr: '' });
+                        row.push({ day: 0 });
                     } else if (currentDay <= daysInMonth) {
-                        const thisDate = new Date(year, month - 1, currentDay);
-                        const y = thisDate.getFullYear();
-                        const m = String(thisDate.getMonth() + 1).padStart(2, '0');
-                        const d = String(thisDate.getDate()).padStart(2, '0');
-                        const dateStr = `${y}-${m}-${d}`;
-                        row.push({ day: currentDay, dateObj: thisDate, dateStr: dateStr });
+                        const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(currentDay).padStart(2,'0')}`;
+                        row.push({ day: currentDay, dateStr });
                         currentDay++;
                     } else {
-                        row.push({ day: 0, dateObj: null, dateStr: '' });
+                        row.push({ day: 0 });
                     }
                 }
                 rows.push(row);
                 if (currentDay > daysInMonth) break;
             }
-            while (rows.length < 6) {
-                const blankRow = [];
-                for (let i = 0; i < 7; i++) blankRow.push({ day: 0, dateObj: null, dateStr: '' });
-                rows.push(blankRow);
-            }
 
             const tbody = document.getElementById('calendarBody');
-            const placeholder = document.getElementById('placeholderMsg');
-            if (placeholder) placeholder.style.display = 'none';
-
             let html = '';
-            for (let r = 0; r < rows.length; r++) {
-                let tr = '<tr>';
-                for (let c = 0; c < 7; c++) {
-                    const cell = rows[r][c];
+            rows.forEach(row => {
+                html += '<tr>';
+                row.forEach(cell => {
                     if (cell.day === 0) {
-                        tr += '<td style="background: #fafcfe;"></td>';
+                        html += '<td style="background:#fafcfe;"></td>';
                     } else {
-                        const { schedule } = getScheduleByDate(cell.dateObj, selectedValue);
-                        let badgeClass = 'badge-rest';
-                        if (schedule === '中班') badgeClass = 'badge-work';
-                        else if (schedule === '白班') badgeClass = 'badge-day';
-                        else if (schedule === '零点') badgeClass = 'badge-night';
-                        else if (schedule === '休息') badgeClass = 'badge-rest';
+                        const { schedule } = getScheduleByDate(cell.dateStr, selectedValue);
+                        let cls = 'badge-rest';
+                        if (schedule === '中班') cls = 'badge-work';
+                        else if (schedule === '白班') cls = 'badge-day';
+                        else if (schedule === '零点') cls = 'badge-night';
 
-                        const isWeekend = (c === 5 || c === 6);
-                        const isToday = (cell.dateStr === todayStr);
-                        const todayClass = isToday ? 'today-highlight' : '';
-
-                        tr += `<td class="${isWeekend ? 'weekend' : ''} ${todayClass}">`;
-                        tr += `<div class="date-num">${cell.day}`;
-                        if (isToday) tr += `<span class="today-tag">今天</span>`;
-                        tr += `</div>`;
-                        tr += `<div class="schedule-badge ${badgeClass}">${schedule}</div>`;
-                        tr += '</td>';
+                        const isToday = cell.dateStr === todayStr;
+                        const todayCls = isToday ? 'today-highlight' : '';
+                        html += `<td class="${todayCls}">`;
+                        html += `<div class="date-num">${cell.day}${isToday ? '<span class="today-tag">今</span>' : ''}</div>`;
+                        html += `<div class="schedule-badge ${cls}">${schedule}</div>`;
+                        html += '</td>';
                     }
-                }
-                tr += '</tr>';
-                html += tr;
-            }
+                });
+                html += '</tr>';
+            });
             tbody.innerHTML = html;
         }
 
-        window.renderMonthCalendar = renderMonthCalendar;
-
-        function initMonthPicker() {
-            const today = new Date();
-            const y = today.getFullYear();
-            const m = String(today.getMonth() + 1).padStart(2, '0');
-            document.getElementById('monthPicker').value = `${y}-${m}`;
-        }
-
         window.openSettingsModal = function() {
-            const modal = document.getElementById('settingsModal');
             const grid = document.getElementById('baseInputsGrid');
             let html = '';
             for (let v = 1; v <= 5; v++) {
-                const dateVal = baseDateConfig[v] ? baseDateConfig[v].date : 
-                    (v === 4 ? PRESET_BASE4_ZERO : calculateBase1FromBase4(PRESET_BASE4_ZERO));
+                const val = baseDateConfig[v].date;
                 html += `
-                    <div class="base-row" id="row-${v}">
-                        <label>${v}值</label>
-                        <input type="date" id="baseDate${v}" value="${dateVal}" data-value="${v}">
-                    </div>
-                `;
+                <div class="base-row">
+                    <label>${v}值</label>
+                    <input type="date" id="baseDate${v}" value="${val}" data-value="${v}">
+                </div>`;
             }
             grid.innerHTML = html;
-
-            for (let v = 1; v <= 5; v++) {
-                const input = document.getElementById(`baseDate${v}`);
-                input.addEventListener('change', function(e) {
-                    const changedV = parseInt(this.dataset.value);
-                    const newDate = this.value;
-                    if (!newDate) return;
-                    const tempConfig = regenerateConfigFromOneValue(changedV, newDate);
-                    for (let other = 1; other <= 5; other++) {
-                        if (other === changedV) continue;
-                        const otherInput = document.getElementById(`baseDate${other}`);
-                        if (otherInput) {
-                            otherInput.value = tempConfig[other].date;
-                        }
-                    }
-                });
-            }
-            modal.style.display = 'flex';
+            document.getElementById('settingsModal').style.display = 'flex';
         };
 
         window.closeSettingsModal = function() {
@@ -715,29 +457,17 @@
         };
 
         window.saveAllBaseDates = function() {
-            const input1 = document.getElementById('baseDate1');
-            if (!input1 || !input1.value) {
-                alert('一值零点日期不能为空');
-                return;
-            }
-            const base1 = input1.value;
-            const newConfig = generateFullConfigFromBase1Zero(base1);
-            baseDateConfig = newConfig;
-            saveFullConfigToStorage(newConfig);
+            const v1 = document.getElementById('baseDate1').value;
+            baseDateConfig = generateFullConfigFromBase1Zero(v1);
+            saveFullConfigToStorage(baseDateConfig);
             closeSettingsModal();
             renderMonthCalendar();
         };
 
-        // 页面加载+窗口大小变化时重新渲染
         window.onload = function() {
-            initMonthPicker();
-            const scheduleSelect = document.getElementById('scheduleValue');
-            const monthInput = document.getElementById('monthPicker');
-            scheduleSelect.addEventListener('change', renderMonthCalendar);
-            monthInput.addEventListener('change', renderMonthCalendar);
-            // 监听窗口大小变化，适配旋转屏幕
-            window.addEventListener('resize', renderMonthCalendar);
             renderMonthCalendar();
+            document.getElementById('scheduleValue').addEventListener('change', renderMonthCalendar);
+            document.getElementById('monthPicker').addEventListener('change', renderMonthCalendar);
         };
     })();
 </script>
