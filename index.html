@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>月度排班 · 四值预设</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>月度排班 · 移动适配</title>
     <style>
         * {
             margin: 0;
@@ -13,82 +13,91 @@
         }
         body {
             background: #f0f2f5;
-            padding: 16px;
+            padding: 12px;
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
         }
         .card {
             max-width: 1000px;
             width: 100%;
             background: white;
-            border-radius: 28px;
-            box-shadow: 0 16px 40px rgba(0,0,0,0.12);
-            padding: 28px 26px;
+            border-radius: 24px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+            padding: 20px 16px;
         }
         h1 {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 600;
             color: #1f2d3d;
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: space-between;
             flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 8px;
         }
         h1 small {
-            font-size: 15px;
+            font-size: 13px;
             font-weight: 400;
             color: #5e7a99;
             background: #edf4fa;
-            padding: 4px 16px;
+            padding: 4px 12px;
             border-radius: 30px;
+            white-space: nowrap;
         }
         .subtitle {
             color: #2c3e50;
             background: #f8fafc;
-            padding: 10px 20px;
-            border-radius: 40px;
-            font-size: 14px;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 13px;
             display: inline-block;
-            margin: 10px 0 20px 0;
+            margin: 6px 0 16px 0;
             border: 1px solid #e0eaf3;
         }
-        /* 主查询面板 */
+        /* 主查询面板 - 移动优化 */
         .selector-panel {
             display: flex;
-            flex-wrap: wrap;
-            gap: 18px 25px;
-            align-items: flex-end;
+            flex-direction: column;
+            gap: 12px;
             background: #f9fcff;
-            padding: 18px 22px;
-            border-radius: 50px;
-            margin-bottom: 25px;
+            padding: 16px;
+            border-radius: 28px;
+            margin-bottom: 20px;
             border: 1px solid #d4e2f0;
         }
         .select-group {
-            flex: 1 1 160px;
-            min-width: 150px;
+            width: 100%;
         }
         .select-group label {
             display: block;
             font-size: 14px;
             font-weight: 500;
             color: #2c3e50;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
             letter-spacing: 0.3px;
         }
         .select-group select,
         .select-group input {
             width: 100%;
-            padding: 12px 18px;
+            padding: 12px 16px;
             border: 1.5px solid #d9e2ec;
-            border-radius: 40px;
+            border-radius: 30px;
             font-size: 15px;
             background: white;
             transition: 0.2s;
             outline: none;
             cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        .select-group select {
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2014%2014%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M7%2010.5L2%205h10l-5%205.5z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 12px;
         }
         .select-group select:focus,
         .select-group input:focus {
@@ -101,21 +110,21 @@
             border: 1.5px solid #b8ccdd;
             color: #2c5779;
             font-weight: 500;
-            padding: 10px 28px;
-            border-radius: 40px;
+            padding: 10px 20px;
+            border-radius: 30px;
             cursor: pointer;
             font-size: 15px;
             transition: 0.15s;
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            margin-left: 10px;
+            white-space: nowrap;
         }
         .settings-btn:hover {
             background: #edf5ff;
             border-color: #0077ff;
         }
-        /* 设置浮层 (五个值全显示，任意值可改) */
+        /* 设置浮层 - 移动适配 */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -124,32 +133,32 @@
             align-items: center;
             justify-content: center;
             z-index: 1000;
+            padding: 16px;
         }
         .modal-card {
             background: white;
-            max-width: 580px;
-            width: 90%;
-            border-radius: 42px;
-            padding: 30px 28px;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            border-radius: 32px;
+            padding: 24px 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
             animation: fadeIn 0.2s;
+            overflow-y: auto;
         }
         @keyframes fadeIn { from { opacity:0; transform:scale(0.96); } to { opacity:1; transform:scale(1); } }
         .modal-card h2 {
-            font-size: 24px;
+            font-size: 22px;
             color: #00284d;
             margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
         .rule-hint {
             background: #e8f0fe;
-            padding: 16px 20px;
-            border-radius: 30px;
+            padding: 14px 16px;
+            border-radius: 24px;
             color: #144b7a;
-            font-size: 15px;
-            margin: 8px 0 20px;
+            font-size: 14px;
+            margin: 8px 0 16px;
             text-align: center;
             font-weight: 500;
             border-left: 4px solid #283593;
@@ -157,77 +166,82 @@
         .base-grid {
             display: flex;
             flex-direction: column;
-            gap: 14px;
-            margin: 20px 0 25px;
-            max-height: 340px;
+            gap: 12px;
+            margin: 16px 0 20px;
+            max-height: 50vh;
             overflow-y: auto;
-            padding-right: 6px;
+            padding-right: 4px;
         }
         .base-row {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             background: #f3f9ff;
-            padding: 12px 18px;
-            border-radius: 60px;
+            padding: 10px 14px;
+            border-radius: 40px;
             border: 1px solid #d5e3f0;
+            flex-wrap: wrap;
         }
         .base-row label {
             font-weight: 600;
             color: #1f4970;
-            min-width: 48px;
-            font-size: 16px;
+            min-width: 42px;
+            font-size: 15px;
         }
         .base-row input[type="date"] {
             flex: 1;
-            padding: 10px 16px;
+            min-width: 160px;
+            padding: 10px 14px;
             border: 1px solid #c2d6e8;
-            border-radius: 40px;
-            font-size: 15px;
+            border-radius: 30px;
+            font-size: 14px;
             background: white;
         }
         .modal-actions {
             display: flex;
             justify-content: flex-end;
-            gap: 16px;
-            margin-top: 20px;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        .save-btn, .cancel-btn {
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 15px;
+            flex: 1 1 auto;
         }
         .save-btn {
             background: #0077ff;
-            border: none;
             color: white;
-            padding: 14px 38px;
-            border-radius: 40px;
-            font-weight: 600;
-            cursor: pointer;
         }
         .cancel-btn {
             background: transparent;
             border: 1.5px solid #a1b9cf;
             color: #2b4b6f;
-            padding: 14px 30px;
-            border-radius: 40px;
-            font-weight: 500;
-            cursor: pointer;
         }
 
-        /* 日历表格 */
+        /* 日历表格容器 - 移动横向滚动 */
         .calendar-wrapper {
             background: #ffffff;
-            border-radius: 32px;
-            padding: 8px 0 0 0;
+            border-radius: 24px;
+            padding: 8px 0 4px 0;
             overflow-x: auto;
+            margin: 0 -4px;
+            -webkit-overflow-scrolling: touch;
         }
         .calendar-table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 680px;
+            min-width: 600px;  /* 确保小屏可横向滑动 */
             table-layout: fixed;
         }
         .calendar-table th {
-            padding: 18px 8px 12px 8px;
+            padding: 14px 4px 10px 4px;
             font-weight: 600;
-            font-size: 16px;
+            font-size: 15px;
             color: #1e3b5c;
             border-bottom: 2px solid #cbd6e4;
             background: white;
@@ -236,37 +250,34 @@
             border: 1px solid #ecf3fa;
             text-align: center;
             vertical-align: middle;
-            padding: 12px 4px;
+            padding: 8px 2px;
             background: white;
             transition: background 0.1s;
-            font-size: 15px;
-        }
-        .calendar-table td:hover {
-            background: #f5faff;
+            font-size: 14px;
         }
         .date-num {
             font-weight: 600;
-            font-size: 17px;
+            font-size: 16px;
             color: #1e2f3f;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
         .schedule-badge {
             display: inline-block;
-            padding: 6px 12px;
-            border-radius: 40px;
-            font-size: 15px;
+            padding: 4px 8px;
+            border-radius: 30px;
+            font-size: 13px;
             font-weight: 500;
-            min-width: 66px;
+            min-width: 54px;
             text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
-        .badge-work { background: #e2f0ff; color: #0057b3; }      /* 中班 */
-        .badge-day  { background: #e6f7e6; color: #1e7a1e; }      /* 白班 */
-        .badge-night { background: #e3eafc; color: #283593; }      /* 零点 */
-        .badge-rest { background: #f2f2f2; color: #6c757d; }      /* 休息 */
+        .badge-work { background: #e2f0ff; color: #0057b3; }
+        .badge-day  { background: #e6f7e6; color: #1e7a1e; }
+        .badge-night { background: #e3eafc; color: #283593; }
+        .badge-rest { background: #f2f2f2; color: #6c757d; }
         .today-highlight {
             background: #fff7e6;
-            border-radius: 12px;
+            border-radius: 8px;
         }
         .today-highlight .date-num {
             color: #d45a00;
@@ -275,59 +286,73 @@
             display: inline-block;
             background: #ff9500;
             color: white;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
-            padding: 2px 8px;
-            border-radius: 30px;
-            margin-left: 6px;
+            padding: 2px 6px;
+            border-radius: 20px;
+            margin-left: 4px;
             letter-spacing: 0.3px;
+            vertical-align: middle;
         }
         .weekend .date-num {
             color: #d32f2f;
         }
         .tips-footer {
-            margin-top: 28px;
+            margin-top: 20px;
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
             align-items: center;
-            justify-content: space-between;
+            gap: 10px;
             color: #5e7a99;
             background: #f3f9ff;
-            padding: 14px 24px;
-            border-radius: 50px;
-            font-size: 14px;
+            padding: 14px 16px;
+            border-radius: 30px;
+            font-size: 13px;
         }
         .legend {
             display: flex;
-            gap: 24px;
+            gap: 16px;
             flex-wrap: wrap;
+            justify-content: center;
         }
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
         .color-dot {
-            width: 18px;
-            height: 18px;
-            border-radius: 18px;
+            width: 16px;
+            height: 16px;
+            border-radius: 16px;
         }
         .dot-work { background: #e2f0ff; border: 1px solid #0077ff; }
         .dot-day { background: #e6f7e6; border: 1px solid #1e7a1e; }
         .dot-night { background: #e3eafc; border: 1px solid #283593; }
         .dot-rest { background: #f2f2f2; border: 1px solid #8f9eb0; }
+
+        /* 小屏优化 */
+        @media (max-width: 420px) {
+            .card { padding: 16px 12px; }
+            h1 { font-size: 22px; }
+            .settings-btn { padding: 8px 16px; font-size: 14px; }
+            .base-row { flex-direction: column; align-items: flex-start; }
+            .base-row label { min-width: auto; }
+            .base-row input[type="date"] { width: 100%; }
+            .modal-actions button { width: 100%; }
+        }
     </style>
 </head>
 <body>
 <div class="card">
-    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
         <h1>
             🗓️ 排班日历
+            <small>四值零点 2026-03-14</small>
         </h1>
-        <button class="settings-btn" onclick="openSettingsModal()">⚙️ 设置零点基准日</button>
+        <button class="settings-btn" onclick="openSettingsModal()">⚙️ 设置基准日</button>
     </div>
 
-    <!-- 查询面板 -->
+    <!-- 查询面板 - 移动垂直排列 -->
     <div class="selector-panel">
         <div class="select-group">
             <label>👥 运行值</label>
@@ -343,19 +368,18 @@
             <label>📆 选择月份</label>
             <input type="month" id="monthPicker" value="2026-03">
         </div>
-        <!-- 自动刷新，无按钮 -->
     </div>
 
-    <!-- 日历容器 -->
+    <!-- 日历容器 - 支持横向滑动 -->
     <div id="calendarContainer" class="calendar-wrapper">
         <table class="calendar-table" id="calendarTable">
             <thead><tr><th>周一</th><th>周二</th><th>周三</th><th>周四</th><th>周五</th><th>周六</th><th>周日</th></tr></thead>
             <tbody id="calendarBody"></tbody>
         </table>
-        <div style="text-align:center; padding: 40px; color:#aaa; font-size:15px;" id="placeholderMsg">加载排班数据...</div>
+        <div style="text-align:center; padding: 30px; color:#aaa; font-size:14px;" id="placeholderMsg">加载排班数据...</div>
     </div>
 
-    <!-- 图例 -->
+    <!-- 图例 - 移动换行 -->
     <div class="tips-footer">
         <div class="legend">
             <span class="legend-item"><span class="color-dot dot-work"></span> 中班</span>
@@ -363,54 +387,45 @@
             <span class="legend-item"><span class="color-dot dot-night"></span> 零点</span>
             <span class="legend-item"><span class="color-dot dot-rest"></span> 休息</span>
         </div>
-        <div>🟡 橙色底 = 今天</div>
-        <div>周期: 中·中 · 休 · 白·白 · 休 · 零点·零点 · 休·休 (10天)</div>
+        <div>🟡 橙色底 = 今天 · 10天周期</div>
     </div>
 </div>
 
-<!-- 设置浮层：五个值全部显示，任意修改一个，其余联动 -->
+<!-- 设置浮层 - 移动适配 -->
 <div class="modal-overlay" id="settingsModal" onclick="if(event.target===this) closeSettingsModal()">
     <div class="modal-card" onclick="event.stopPropagation()">
-        <h2>📌 设置每个值的第一个零点</h2>
+        <h2>📌 设置第一个零点</h2>
         <div class="rule-hint">
-            🌙 请设定每个运行值的 <strong>第一个零点日期</strong><br>
-            ⚡ 修改任意值，其他值自动按相邻相差<strong>2天</strong>
+            🌙 每个值的第一个零点日期<br>⚡ 修改任意值，其余自动 ±2天
         </div>
         <div class="base-grid" id="baseInputsGrid">
-            <!-- 动态生成五个输入行 -->
+            <!-- 动态生成 -->
         </div>
         <div class="modal-actions">
             <button class="cancel-btn" onclick="closeSettingsModal()">取消</button>
-            <button class="save-btn" onclick="saveAllBaseDates()">保存零点基准</button>
+            <button class="save-btn" onclick="saveAllBaseDates()">保存基准</button>
         </div>
-        <p style="font-size:13px; color:#8ca3b9; margin-top:18px;">* 偏移量固定为6，周期10天。修改后整个序列重新对齐。</p>
+        <p style="font-size:12px; color:#8ca3b9; margin-top:16px;">* 偏移量6，周期10天</p>
     </div>
 </div>
 
 <script>
     (function() {
-        // ---------- 固定偏移量 ----------
         const OFFSET_FIXED = 6;
-
-        // ---------- 预设：四值第一个零点为 2026-03-14 ----------
-        // 根据相邻相差2天的规则，反推一值第一个零点应为 2026-03-08 (因为四值比一值多6天: 3/8 +6 = 3/14)
         const PRESET_BASE4_ZERO = '2026-03-14';
         
-        // 根据四值计算一值基准
         function calculateBase1FromBase4(base4Str) {
             const base4 = new Date(base4Str);
             base4.setHours(0,0,0,0);
-            base4.setDate(base4.getDate() - 6); // 四值比一值多6天 (相差 (4-1)*2 =6)
+            base4.setDate(base4.getDate() - 6);
             const y = base4.getFullYear();
             const m = String(base4.getMonth() + 1).padStart(2, '0');
             const d = String(base4.getDate()).padStart(2, '0');
             return `${y}-${m}-${d}`;
         }
 
-        // 默认一值基准由四值预设计算得出
         const DEFAULT_BASE1_ZERO = calculateBase1FromBase4(PRESET_BASE4_ZERO);
 
-        // 从localStorage读取五个值的基准日期 (存储为对象，日期值为第一个零点的日期)
         function loadFullConfigFromStorage() {
             try {
                 const stored = localStorage.getItem('scheduleFullConfig_zero_preset4');
@@ -421,11 +436,9 @@
                     }
                 }
             } catch (e) {}
-            // 若没有存储，则基于默认一值零点生成完整配置 (相邻差2)，该默认值已由四值预设推算
             return generateFullConfigFromBase1Zero(DEFAULT_BASE1_ZERO);
         }
 
-        // 根据一值第一个零点生成全量配置 (相邻差2)
         function generateFullConfigFromBase1Zero(base1ZeroStr) {
             const base1 = new Date(base1ZeroStr);
             base1.setHours(0,0,0,0);
@@ -438,14 +451,13 @@
                 const m = String(d.getMonth() + 1).padStart(2, '0');
                 const day = String(d.getDate()).padStart(2, '0');
                 config[v] = {
-                    date: `${y}-${m}-${day}`,   // 存储第一个零点的日期
+                    date: `${y}-${m}-${day}`,
                     cycleOffset: OFFSET_FIXED
                 };
             }
             return config;
         }
 
-        // 根据任意一个值及其第一个零点日期，重新生成整个序列（保持相邻差2）
         function regenerateConfigFromOneValue(changedValue, newDateStr) {
             const baseDate = new Date(newDateStr);
             baseDate.setHours(0,0,0,0);
@@ -456,7 +468,6 @@
                 cycleOffset: OFFSET_FIXED
             };
 
-            // 向后递推 (大于changedValue)
             for (let v = changedValue + 1; v <= 5; v++) {
                 const prevDate = new Date(newConfig[v-1].date);
                 prevDate.setDate(prevDate.getDate() + 2);
@@ -468,7 +479,6 @@
                     cycleOffset: OFFSET_FIXED
                 };
             }
-            // 向前递推 (小于changedValue)
             for (let v = changedValue - 1; v >= 1; v--) {
                 const nextDate = new Date(newConfig[v+1].date);
                 nextDate.setDate(nextDate.getDate() - 2);
@@ -483,15 +493,12 @@
             return newConfig;
         }
 
-        // 当前生效的完整配置 (存储的是每个值的第一个零点日期)
         let baseDateConfig = loadFullConfigFromStorage();
 
-        // 保存完整配置到localStorage (使用新key避免冲突)
         function saveFullConfigToStorage(config) {
             localStorage.setItem('scheduleFullConfig_zero_preset4', JSON.stringify(config));
         }
 
-        // ---------- 核心函数: 给定日期 + 排班值 返回班次 ----------
         function getScheduleByDate(targetDate, value) {
             const config = baseDateConfig[value];
             if (!config) return { schedule: '未知', isRest: false };
@@ -501,7 +508,7 @@
             t.setHours(0,0,0,0);
             const timeDiff = t - baseZeroDate;
             const dayDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-            const basePos = 7; // 第一个零点是周期第7天
+            const basePos = 7;
             const cyclePos = ((basePos - 1 + dayDiff) % 10 + 10) % 10 + 1;
 
             let schedule = '';
@@ -516,7 +523,6 @@
             return { schedule, isRest };
         }
 
-        // 获取今日日期字符串
         function getTodayDateStr() {
             const d = new Date();
             const y = d.getFullYear();
@@ -525,21 +531,18 @@
             return `${y}-${m}-${day}`;
         }
 
-        // 渲染月历
         function renderMonthCalendar() {
             const selectedValue = document.getElementById('scheduleValue').value;
             const monthStr = document.getElementById('monthPicker').value;
-            if (!monthStr) {
-                return;
-            }
+            if (!monthStr) return;
             const [year, month] = monthStr.split('-').map(Number);
 
             const firstDay = new Date(year, month - 1, 1);
             const lastDay = new Date(year, month, 0);
             const daysInMonth = lastDay.getDate();
 
-            let firstWeekday = firstDay.getDay(); // 0周日
-            let startCol = (firstWeekday === 0) ? 6 : firstWeekday - 1; // 周一0 ~ 周日6
+            let firstWeekday = firstDay.getDay();
+            let startCol = (firstWeekday === 0) ? 6 : firstWeekday - 1;
 
             const rows = [];
             let currentDay = 1;
@@ -608,10 +611,8 @@
             tbody.innerHTML = html;
         }
 
-        // 暴露渲染函数供全局调用
         window.renderMonthCalendar = renderMonthCalendar;
 
-        // 初始化月份选择器为当前年月
         function initMonthPicker() {
             const today = new Date();
             const y = today.getFullYear();
@@ -619,14 +620,13 @@
             document.getElementById('monthPicker').value = `${y}-${m}`;
         }
 
-        // ---------- 设置浮层 ----------
         window.openSettingsModal = function() {
             const modal = document.getElementById('settingsModal');
             const grid = document.getElementById('baseInputsGrid');
             let html = '';
             for (let v = 1; v <= 5; v++) {
                 const dateVal = baseDateConfig[v] ? baseDateConfig[v].date : 
-                    (v === 4 ? PRESET_BASE4_ZERO : calculateBase1FromBase4(PRESET_BASE4_ZERO)); // 后备，但一般已有config
+                    (v === 4 ? PRESET_BASE4_ZERO : calculateBase1FromBase4(PRESET_BASE4_ZERO));
                 html += `
                     <div class="base-row" id="row-${v}">
                         <label>${v}值</label>
@@ -652,7 +652,6 @@
                     }
                 });
             }
-
             modal.style.display = 'flex';
         };
 
@@ -674,17 +673,12 @@
             renderMonthCalendar();
         };
 
-        // 页面加载
         window.onload = function() {
             initMonthPicker();
-            // 绑定自动刷新事件
             const scheduleSelect = document.getElementById('scheduleValue');
             const monthInput = document.getElementById('monthPicker');
-            
             scheduleSelect.addEventListener('change', renderMonthCalendar);
             monthInput.addEventListener('change', renderMonthCalendar);
-            
-            // 初始渲染
             renderMonthCalendar();
         };
     })();
