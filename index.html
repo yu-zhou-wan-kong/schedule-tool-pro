@@ -3,100 +3,334 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>多值排班查询工具（含未来3天）</title>
+    <title>月度排班 · 四值预设</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "Helvetica Neue", Arial, sans-serif;
+            font-family: system-ui, -apple-system, 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', sans-serif;
         }
         body {
-            background-color: #f5f5f5;
-            padding: 20px;
+            background: #f0f2f5;
+            padding: 16px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-        .container {
-            max-width: 400px;
-            margin: 0 auto;
+        .card {
+            max-width: 1000px;
+            width: 100%;
             background: white;
-            padding: 30px 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 28px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+            padding: 28px 26px;
         }
         h1 {
-            text-align: center;
-            color: #333;
-            font-size: 22px;
+            font-size: 28px;
+            font-weight: 600;
+            color: #1f2d3d;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        h1 small {
+            font-size: 15px;
+            font-weight: 400;
+            color: #5e7a99;
+            background: #edf4fa;
+            padding: 4px 16px;
+            border-radius: 30px;
+        }
+        .subtitle {
+            color: #2c3e50;
+            background: #f8fafc;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-size: 14px;
+            display: inline-block;
+            margin: 10px 0 20px 0;
+            border: 1px solid #e0eaf3;
+        }
+        /* 主查询面板 */
+        .selector-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px 25px;
+            align-items: flex-end;
+            background: #f9fcff;
+            padding: 18px 22px;
+            border-radius: 50px;
             margin-bottom: 25px;
+            border: 1px solid #d4e2f0;
         }
-        .input-group {
-            margin-bottom: 20px;
+        .select-group {
+            flex: 1 1 160px;
+            min-width: 150px;
         }
-        label {
+        .select-group label {
             display: block;
-            margin-bottom: 8px;
-            color: #555;
+            font-size: 14px;
+            font-weight: 500;
+            color: #2c3e50;
+            margin-bottom: 6px;
+            letter-spacing: 0.3px;
+        }
+        .select-group select,
+        .select-group input {
+            width: 100%;
+            padding: 12px 18px;
+            border: 1.5px solid #d9e2ec;
+            border-radius: 40px;
+            font-size: 15px;
+            background: white;
+            transition: 0.2s;
+            outline: none;
+            cursor: pointer;
+        }
+        .select-group select:focus,
+        .select-group input:focus {
+            border-color: #0077ff;
+            box-shadow: 0 0 0 3px rgba(0,119,255,0.15);
+        }
+        /* 设置按钮 */
+        .settings-btn {
+            background: white;
+            border: 1.5px solid #b8ccdd;
+            color: #2c5779;
+            font-weight: 500;
+            padding: 10px 28px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: 10px;
+        }
+        .settings-btn:hover {
+            background: #edf5ff;
+            border-color: #0077ff;
+        }
+        /* 设置浮层 (五个值全显示，任意值可改) */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-card {
+            background: white;
+            max-width: 580px;
+            width: 90%;
+            border-radius: 42px;
+            padding: 30px 28px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+            animation: fadeIn 0.2s;
+        }
+        @keyframes fadeIn { from { opacity:0; transform:scale(0.96); } to { opacity:1; transform:scale(1); } }
+        .modal-card h2 {
+            font-size: 24px;
+            color: #00284d;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .rule-hint {
+            background: #e8f0fe;
+            padding: 16px 20px;
+            border-radius: 30px;
+            color: #144b7a;
+            font-size: 15px;
+            margin: 8px 0 20px;
+            text-align: center;
+            font-weight: 500;
+            border-left: 4px solid #283593;
+        }
+        .base-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin: 20px 0 25px;
+            max-height: 340px;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+        .base-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #f3f9ff;
+            padding: 12px 18px;
+            border-radius: 60px;
+            border: 1px solid #d5e3f0;
+        }
+        .base-row label {
+            font-weight: 600;
+            color: #1f4970;
+            min-width: 48px;
+            font-size: 16px;
+        }
+        .base-row input[type="date"] {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1px solid #c2d6e8;
+            border-radius: 40px;
+            font-size: 15px;
+            background: white;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 16px;
+            margin-top: 20px;
+        }
+        .save-btn {
+            background: #0077ff;
+            border: none;
+            color: white;
+            padding: 14px 38px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .cancel-btn {
+            background: transparent;
+            border: 1.5px solid #a1b9cf;
+            color: #2b4b6f;
+            padding: 14px 30px;
+            border-radius: 40px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* 日历表格 */
+        .calendar-wrapper {
+            background: #ffffff;
+            border-radius: 32px;
+            padding: 8px 0 0 0;
+            overflow-x: auto;
+        }
+        .calendar-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 680px;
+            table-layout: fixed;
+        }
+        .calendar-table th {
+            padding: 18px 8px 12px 8px;
+            font-weight: 600;
+            font-size: 16px;
+            color: #1e3b5c;
+            border-bottom: 2px solid #cbd6e4;
+            background: white;
+        }
+        .calendar-table td {
+            border: 1px solid #ecf3fa;
+            text-align: center;
+            vertical-align: middle;
+            padding: 12px 4px;
+            background: white;
+            transition: background 0.1s;
             font-size: 15px;
         }
-        input, select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            outline: none;
+        .calendar-table td:hover {
+            background: #f5faff;
         }
-        input:focus, select:focus {
-            border-color: #007aff;
+        .date-num {
+            font-weight: 600;
+            font-size: 17px;
+            color: #1e2f3f;
+            margin-bottom: 5px;
         }
-        button {
-            width: 100%;
-            padding: 14px;
-            background-color: #007aff;
+        .schedule-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 40px;
+            font-size: 15px;
+            font-weight: 500;
+            min-width: 66px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+        }
+        .badge-work { background: #e2f0ff; color: #0057b3; }      /* 中班 */
+        .badge-day  { background: #e6f7e6; color: #1e7a1e; }      /* 白班 */
+        .badge-night { background: #e3eafc; color: #283593; }      /* 零点 */
+        .badge-rest { background: #f2f2f2; color: #6c757d; }      /* 休息 */
+        .today-highlight {
+            background: #fff7e6;
+            border-radius: 12px;
+        }
+        .today-highlight .date-num {
+            color: #d45a00;
+        }
+        .today-tag {
+            display: inline-block;
+            background: #ff9500;
             color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 17px;
-            cursor: pointer;
-            margin-bottom: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 30px;
+            margin-left: 6px;
+            letter-spacing: 0.3px;
         }
-        button:hover {
-            background-color: #0066cc;
+        .weekend .date-num {
+            color: #d32f2f;
         }
-        .result {
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            margin-bottom: 10px;
+        .tips-footer {
+            margin-top: 28px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            color: #5e7a99;
+            background: #f3f9ff;
+            padding: 14px 24px;
+            border-radius: 50px;
+            font-size: 14px;
         }
-        .result-item {
-            padding: 12px 8px;
-            margin: 8px 0;
-            border-radius: 6px;
-            font-size: 17px;
-            font-weight: bold;
+        .legend {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
         }
-        .work {
-            background-color: #e8f4fd;
-            color: #007aff;
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .rest {
-            background-color: #f0f8fb;
-            color: #34c759;
+        .color-dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 18px;
         }
-        .tips {
-            margin-top: 15px;
-            font-size: 13px;
-            color: #999;
-            text-align: center;
-        }
+        .dot-work { background: #e2f0ff; border: 1px solid #0077ff; }
+        .dot-day { background: #e6f7e6; border: 1px solid #1e7a1e; }
+        .dot-night { background: #e3eafc; border: 1px solid #283593; }
+        .dot-rest { background: #f2f2f2; border: 1px solid #8f9eb0; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>多值排班查询工具</h1>
-        <div class="input-group">
-            <label for="scheduleValue">请选择排班值</label>
+<div class="card">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+        <h1>
+            🗓️ 排班日历
+        </h1>
+        <button class="settings-btn" onclick="openSettingsModal()">⚙️ 设置零点基准日</button>
+    </div>
+
+    <!-- 查询面板 -->
+    <div class="selector-panel">
+        <div class="select-group">
+            <label>👥 运行值</label>
             <select id="scheduleValue">
                 <option value="1">一值</option>
                 <option value="2">二值</option>
@@ -105,109 +339,355 @@
                 <option value="5">五值</option>
             </select>
         </div>
-        <div class="input-group">
-            <label for="dateInput">请输入查询起始日期</label>
-            <input type="date" id="dateInput" placeholder="选择日期">
+        <div class="select-group">
+            <label>📆 选择月份</label>
+            <input type="month" id="monthPicker" value="2026-03">
         </div>
-        <button onclick="checkSchedule()">查询4天排班</button>
-        <div id="resultContainer" style="display: none;"></div>
-        <div class="tips">
-            中中=白白=夜夜== | 周期：10天循环
-        </div>
+        <!-- 自动刷新，无按钮 -->
     </div>
 
-    <script>
-        // 初始化：默认显示当天日期
-        window.onload = function() {
-            const today = new Date();
-            const y = today.getFullYear();
-            const m = String(today.getMonth() + 1).padStart(2, '0');
-            const d = String(today.getDate()).padStart(2, '0');
-            document.getElementById('dateInput').value = `${y}-${m}-${d}`;
-        };
+    <!-- 日历容器 -->
+    <div id="calendarContainer" class="calendar-wrapper">
+        <table class="calendar-table" id="calendarTable">
+            <thead><tr><th>周一</th><th>周二</th><th>周三</th><th>周四</th><th>周五</th><th>周六</th><th>周日</th></tr></thead>
+            <tbody id="calendarBody"></tbody>
+        </table>
+        <div style="text-align:center; padding: 40px; color:#aaa; font-size:15px;" id="placeholderMsg">加载排班数据...</div>
+    </div>
 
-        // 定义5个值的基准日期配置
-        const baseDateConfig = {
-            1: { date: '2026-01-07', cycleOffset: 6 }, // 基准日期对应的周期偏移量
-            2: { date: '2026-01-09', cycleOffset: 6 },
-            3: { date: '2026-01-11', cycleOffset: 6 },
-            4: { date: '2026-01-13', cycleOffset: 6 },
-            5: { date: '2026-01-15', cycleOffset: 6 }
-        };
+    <!-- 图例 -->
+    <div class="tips-footer">
+        <div class="legend">
+            <span class="legend-item"><span class="color-dot dot-work"></span> 中班</span>
+            <span class="legend-item"><span class="color-dot dot-day"></span> 白班</span>
+            <span class="legend-item"><span class="color-dot dot-night"></span> 零点</span>
+            <span class="legend-item"><span class="color-dot dot-rest"></span> 休息</span>
+        </div>
+        <div>🟡 橙色底 = 今天</div>
+        <div>周期: 中·中 · 休 · 白·白 · 休 · 零点·零点 · 休·休 (10天)</div>
+    </div>
+</div>
 
-        // 计算单天班次的核心函数（适配多基准值）
+<!-- 设置浮层：五个值全部显示，任意修改一个，其余联动 -->
+<div class="modal-overlay" id="settingsModal" onclick="if(event.target===this) closeSettingsModal()">
+    <div class="modal-card" onclick="event.stopPropagation()">
+        <h2>📌 设置每个值的第一个零点</h2>
+        <div class="rule-hint">
+            🌙 请设定每个运行值的 <strong>第一个零点日期</strong><br>
+            ⚡ 修改任意值，其他值自动按相邻相差<strong>2天</strong>
+        </div>
+        <div class="base-grid" id="baseInputsGrid">
+            <!-- 动态生成五个输入行 -->
+        </div>
+        <div class="modal-actions">
+            <button class="cancel-btn" onclick="closeSettingsModal()">取消</button>
+            <button class="save-btn" onclick="saveAllBaseDates()">保存零点基准</button>
+        </div>
+        <p style="font-size:13px; color:#8ca3b9; margin-top:18px;">* 偏移量固定为6，周期10天。修改后整个序列重新对齐。</p>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ---------- 固定偏移量 ----------
+        const OFFSET_FIXED = 6;
+
+        // ---------- 预设：四值第一个零点为 2026-03-14 ----------
+        // 根据相邻相差2天的规则，反推一值第一个零点应为 2026-03-08 (因为四值比一值多6天: 3/8 +6 = 3/14)
+        const PRESET_BASE4_ZERO = '2026-03-14';
+        
+        // 根据四值计算一值基准
+        function calculateBase1FromBase4(base4Str) {
+            const base4 = new Date(base4Str);
+            base4.setHours(0,0,0,0);
+            base4.setDate(base4.getDate() - 6); // 四值比一值多6天 (相差 (4-1)*2 =6)
+            const y = base4.getFullYear();
+            const m = String(base4.getMonth() + 1).padStart(2, '0');
+            const d = String(base4.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        // 默认一值基准由四值预设计算得出
+        const DEFAULT_BASE1_ZERO = calculateBase1FromBase4(PRESET_BASE4_ZERO);
+
+        // 从localStorage读取五个值的基准日期 (存储为对象，日期值为第一个零点的日期)
+        function loadFullConfigFromStorage() {
+            try {
+                const stored = localStorage.getItem('scheduleFullConfig_zero_preset4');
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    if (parsed && typeof parsed === 'object' && parsed[1] && parsed[2]) {
+                        return parsed;
+                    }
+                }
+            } catch (e) {}
+            // 若没有存储，则基于默认一值零点生成完整配置 (相邻差2)，该默认值已由四值预设推算
+            return generateFullConfigFromBase1Zero(DEFAULT_BASE1_ZERO);
+        }
+
+        // 根据一值第一个零点生成全量配置 (相邻差2)
+        function generateFullConfigFromBase1Zero(base1ZeroStr) {
+            const base1 = new Date(base1ZeroStr);
+            base1.setHours(0,0,0,0);
+            const config = {};
+            for (let v = 1; v <= 5; v++) {
+                const offsetDays = (v - 1) * 2;
+                const d = new Date(base1);
+                d.setDate(d.getDate() + offsetDays);
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                config[v] = {
+                    date: `${y}-${m}-${day}`,   // 存储第一个零点的日期
+                    cycleOffset: OFFSET_FIXED
+                };
+            }
+            return config;
+        }
+
+        // 根据任意一个值及其第一个零点日期，重新生成整个序列（保持相邻差2）
+        function regenerateConfigFromOneValue(changedValue, newDateStr) {
+            const baseDate = new Date(newDateStr);
+            baseDate.setHours(0,0,0,0);
+            const newConfig = {};
+
+            newConfig[changedValue] = {
+                date: newDateStr,
+                cycleOffset: OFFSET_FIXED
+            };
+
+            // 向后递推 (大于changedValue)
+            for (let v = changedValue + 1; v <= 5; v++) {
+                const prevDate = new Date(newConfig[v-1].date);
+                prevDate.setDate(prevDate.getDate() + 2);
+                const y = prevDate.getFullYear();
+                const m = String(prevDate.getMonth() + 1).padStart(2, '0');
+                const d = String(prevDate.getDate()).padStart(2, '0');
+                newConfig[v] = {
+                    date: `${y}-${m}-${d}`,
+                    cycleOffset: OFFSET_FIXED
+                };
+            }
+            // 向前递推 (小于changedValue)
+            for (let v = changedValue - 1; v >= 1; v--) {
+                const nextDate = new Date(newConfig[v+1].date);
+                nextDate.setDate(nextDate.getDate() - 2);
+                const y = nextDate.getFullYear();
+                const m = String(nextDate.getMonth() + 1).padStart(2, '0');
+                const d = String(nextDate.getDate()).padStart(2, '0');
+                newConfig[v] = {
+                    date: `${y}-${m}-${d}`,
+                    cycleOffset: OFFSET_FIXED
+                };
+            }
+            return newConfig;
+        }
+
+        // 当前生效的完整配置 (存储的是每个值的第一个零点日期)
+        let baseDateConfig = loadFullConfigFromStorage();
+
+        // 保存完整配置到localStorage (使用新key避免冲突)
+        function saveFullConfigToStorage(config) {
+            localStorage.setItem('scheduleFullConfig_zero_preset4', JSON.stringify(config));
+        }
+
+        // ---------- 核心函数: 给定日期 + 排班值 返回班次 ----------
         function getScheduleByDate(targetDate, value) {
-            // 获取对应值的基准日期
             const config = baseDateConfig[value];
-            const baseDate = new Date(config.date);
-            
-            // 计算两个日期的天数差（毫秒转天数）
-            const timeDiff = targetDate - baseDate;
+            if (!config) return { schedule: '未知', isRest: false };
+            const baseZeroDate = new Date(config.date);
+            baseZeroDate.setHours(0,0,0,0);
+            const t = new Date(targetDate);
+            t.setHours(0,0,0,0);
+            const timeDiff = t - baseZeroDate;
             const dayDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-            
-            // 计算在10天周期中的位置（1-10）
-            const cyclePos = ((config.cycleOffset + dayDiff) % 10 + 10) % 10 + 1;
-            
-            // 匹配班次
+            const basePos = 7; // 第一个零点是周期第7天
+            const cyclePos = ((basePos - 1 + dayDiff) % 10 + 10) % 10 + 1;
+
             let schedule = '';
             let isRest = false;
             switch(cyclePos) {
-                case 1: case 2:
-                    schedule = '中班';
-                    break;
-                case 3: case 6: case 9: case 10:
-                    schedule = '休息';
-                    isRest = true;
-                    break;
-                case 4: case 5:
-                    schedule = '白班';
-                    break;
-                case 7: case 8:
-                    schedule = '夜班';
-                    break;
+                case 1: case 2: schedule = '中班'; break;
+                case 3: case 6: case 9: case 10: schedule = '休息'; isRest = true; break;
+                case 4: case 5: schedule = '白班'; break;
+                case 7: case 8: schedule = '零点'; break;
+                default: schedule = '休息'; isRest = true;
             }
             return { schedule, isRest };
         }
 
-        // 批量查询4天排班（支持选择不同值）
-        function checkSchedule() {
-            // 1. 获取选择的排班值
+        // 获取今日日期字符串
+        function getTodayDateStr() {
+            const d = new Date();
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+
+        // 渲染月历
+        function renderMonthCalendar() {
             const selectedValue = document.getElementById('scheduleValue').value;
-            
-            // 2. 获取输入的起始日期
-            const inputDateStr = document.getElementById('dateInput').value;
-            if (!inputDateStr) {
-                alert('请选择要查询的起始日期！');
+            const monthStr = document.getElementById('monthPicker').value;
+            if (!monthStr) {
                 return;
             }
+            const [year, month] = monthStr.split('-').map(Number);
 
-            // 3. 清空之前的结果
-            const resultContainer = document.getElementById('resultContainer');
-            resultContainer.innerHTML = '';
-            resultContainer.style.display = 'block';
+            const firstDay = new Date(year, month - 1, 1);
+            const lastDay = new Date(year, month, 0);
+            const daysInMonth = lastDay.getDate();
 
-            // 4. 循环计算起始日期 + 之后3天（共4天）
-            for (let i = 0; i < 4; i++) {
-                // 创建当前要计算的日期（起始日期 + i天）
-                const currentDate = new Date(inputDateStr);
-                currentDate.setDate(currentDate.getDate() + i);
-                
-                // 格式化日期为 YYYY-MM-DD
-                const y = currentDate.getFullYear();
-                const m = String(currentDate.getMonth() + 1).padStart(2, '0');
-                const d = String(currentDate.getDate()).padStart(2, '0');
-                const dateStr = `${y}-${m}-${d}`;
+            let firstWeekday = firstDay.getDay(); // 0周日
+            let startCol = (firstWeekday === 0) ? 6 : firstWeekday - 1; // 周一0 ~ 周日6
 
-                // 获取当天班次（传入选择的排班值）
-                const { schedule, isRest } = getScheduleByDate(currentDate, selectedValue);
+            const rows = [];
+            let currentDay = 1;
+            const todayStr = getTodayDateStr();
 
-                // 生成结果项
-                const resultItem = document.createElement('div');
-                resultItem.className = `result-item ${isRest ? 'rest' : 'work'}`;
-                resultItem.innerHTML = `${dateStr} → ${schedule}`;
-                resultContainer.appendChild(resultItem);
+            for (let r = 0; r < 6; r++) {
+                const row = [];
+                for (let c = 0; c < 7; c++) {
+                    if (r === 0 && c < startCol) {
+                        row.push({ day: 0, dateObj: null, dateStr: '' });
+                    } else if (currentDay <= daysInMonth) {
+                        const thisDate = new Date(year, month - 1, currentDay);
+                        const y = thisDate.getFullYear();
+                        const m = String(thisDate.getMonth() + 1).padStart(2, '0');
+                        const d = String(thisDate.getDate()).padStart(2, '0');
+                        const dateStr = `${y}-${m}-${d}`;
+                        row.push({ day: currentDay, dateObj: thisDate, dateStr: dateStr });
+                        currentDay++;
+                    } else {
+                        row.push({ day: 0, dateObj: null, dateStr: '' });
+                    }
+                }
+                rows.push(row);
+                if (currentDay > daysInMonth) break;
             }
+            while (rows.length < 6) {
+                const blankRow = [];
+                for (let i = 0; i < 7; i++) blankRow.push({ day: 0, dateObj: null, dateStr: '' });
+                rows.push(blankRow);
+            }
+
+            const tbody = document.getElementById('calendarBody');
+            const placeholder = document.getElementById('placeholderMsg');
+            if (placeholder) placeholder.style.display = 'none';
+
+            let html = '';
+            for (let r = 0; r < rows.length; r++) {
+                let tr = '<tr>';
+                for (let c = 0; c < 7; c++) {
+                    const cell = rows[r][c];
+                    if (cell.day === 0) {
+                        tr += '<td style="background: #fafcfe;"></td>';
+                    } else {
+                        const { schedule } = getScheduleByDate(cell.dateObj, selectedValue);
+                        let badgeClass = 'badge-rest';
+                        if (schedule === '中班') badgeClass = 'badge-work';
+                        else if (schedule === '白班') badgeClass = 'badge-day';
+                        else if (schedule === '零点') badgeClass = 'badge-night';
+                        else if (schedule === '休息') badgeClass = 'badge-rest';
+
+                        const isWeekend = (c === 5 || c === 6);
+                        const isToday = (cell.dateStr === todayStr);
+                        const todayClass = isToday ? 'today-highlight' : '';
+
+                        tr += `<td class="${isWeekend ? 'weekend' : ''} ${todayClass}">`;
+                        tr += `<div class="date-num">${cell.day}`;
+                        if (isToday) tr += `<span class="today-tag">今天</span>`;
+                        tr += `</div>`;
+                        tr += `<div class="schedule-badge ${badgeClass}">${schedule}</div>`;
+                        tr += '</td>';
+                    }
+                }
+                tr += '</tr>';
+                html += tr;
+            }
+            tbody.innerHTML = html;
         }
-    </script>
+
+        // 暴露渲染函数供全局调用
+        window.renderMonthCalendar = renderMonthCalendar;
+
+        // 初始化月份选择器为当前年月
+        function initMonthPicker() {
+            const today = new Date();
+            const y = today.getFullYear();
+            const m = String(today.getMonth() + 1).padStart(2, '0');
+            document.getElementById('monthPicker').value = `${y}-${m}`;
+        }
+
+        // ---------- 设置浮层 ----------
+        window.openSettingsModal = function() {
+            const modal = document.getElementById('settingsModal');
+            const grid = document.getElementById('baseInputsGrid');
+            let html = '';
+            for (let v = 1; v <= 5; v++) {
+                const dateVal = baseDateConfig[v] ? baseDateConfig[v].date : 
+                    (v === 4 ? PRESET_BASE4_ZERO : calculateBase1FromBase4(PRESET_BASE4_ZERO)); // 后备，但一般已有config
+                html += `
+                    <div class="base-row" id="row-${v}">
+                        <label>${v}值</label>
+                        <input type="date" id="baseDate${v}" value="${dateVal}" data-value="${v}">
+                    </div>
+                `;
+            }
+            grid.innerHTML = html;
+
+            for (let v = 1; v <= 5; v++) {
+                const input = document.getElementById(`baseDate${v}`);
+                input.addEventListener('change', function(e) {
+                    const changedV = parseInt(this.dataset.value);
+                    const newDate = this.value;
+                    if (!newDate) return;
+                    const tempConfig = regenerateConfigFromOneValue(changedV, newDate);
+                    for (let other = 1; other <= 5; other++) {
+                        if (other === changedV) continue;
+                        const otherInput = document.getElementById(`baseDate${other}`);
+                        if (otherInput) {
+                            otherInput.value = tempConfig[other].date;
+                        }
+                    }
+                });
+            }
+
+            modal.style.display = 'flex';
+        };
+
+        window.closeSettingsModal = function() {
+            document.getElementById('settingsModal').style.display = 'none';
+        };
+
+        window.saveAllBaseDates = function() {
+            const input1 = document.getElementById('baseDate1');
+            if (!input1 || !input1.value) {
+                alert('一值零点日期不能为空');
+                return;
+            }
+            const base1 = input1.value;
+            const newConfig = generateFullConfigFromBase1Zero(base1);
+            baseDateConfig = newConfig;
+            saveFullConfigToStorage(newConfig);
+            closeSettingsModal();
+            renderMonthCalendar();
+        };
+
+        // 页面加载
+        window.onload = function() {
+            initMonthPicker();
+            // 绑定自动刷新事件
+            const scheduleSelect = document.getElementById('scheduleValue');
+            const monthInput = document.getElementById('monthPicker');
+            
+            scheduleSelect.addEventListener('change', renderMonthCalendar);
+            monthInput.addEventListener('change', renderMonthCalendar);
+            
+            // 初始渲染
+            renderMonthCalendar();
+        };
+    })();
+</script>
 </body>
 </html>
