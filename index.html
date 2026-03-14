@@ -177,6 +177,50 @@
         .dot-night { background: #e3eafc; border: 1px solid #283593; }
         .dot-rest { background: #f2f2f2; border: 1px solid #8f9eb0; }
 
+        /* 今日其他值排班样式 */
+        .other-values {
+            margin-top: 12px;
+            padding: 10px 8px;
+            background: #f9fcff;
+            border-radius: 18px;
+            border: 1px solid #d4e2f0;
+        }
+        .other-title {
+            font-size: 11px;
+            color: #2c5779;
+            margin-bottom: 8px;
+            font-weight: 500;
+            text-align: left;
+            padding-left: 4px;
+        }
+        .other-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: space-around;
+        }
+        .other-item {
+            flex: 1 0 auto;
+            min-width: 55px;
+            background: white;
+            border-radius: 16px;
+            padding: 6px 2px;
+            text-align: center;
+            border: 1px solid #d4e2f0;
+        }
+        .other-value-name {
+            font-size: 11px;
+            font-weight: 600;
+            color: #1e3b5c;
+        }
+        .other-schedule {
+            font-size: 9px;
+            padding: 2px 2px;
+            border-radius: 10px;
+            margin-top: 2px;
+            white-space: nowrap;
+        }
+
         /* 弹窗简化适配 */
         .modal-overlay {
             display: none;
@@ -285,6 +329,14 @@
         </div>
         🟡 橙色 = 今天
     </div>
+
+    <!-- 今日其他值排班 -->
+    <div class="other-values">
+        <div class="other-title">📋 今日其他值排班（基于系统日期）</div>
+        <div class="other-grid" id="otherValuesGrid">
+            <!-- 动态生成 -->
+        </div>
+    </div>
 </div>
 
 <div class="modal-overlay" id="settingsModal" onclick="if(event.target===this) closeSettingsModal()">
@@ -295,7 +347,7 @@
         </div>
         <div id="baseInputsGrid"></div>
 
-        <!-- 新增：默认显示值选择 -->
+        <!-- 默认显示值选择 -->
         <div class="base-row">
             <label>默认值</label>
             <select id="defaultValueSelect">
@@ -380,6 +432,7 @@
             localStorage.setItem('scheduleFullConfig_zero_preset4', JSON.stringify(config));
         }
 
+        // 返回 schedule 和 cyclePos
         function getScheduleByDate(targetDate, value) {
             const config = baseDateConfig[value];
             const baseZeroDate = new Date(config.date);
@@ -393,12 +446,55 @@
                 case 4: case 5: schedule = '白班'; break;
                 case 7: case 8: schedule = '零点'; break;
             }
-            return { schedule };
+            return { schedule, cyclePos };
         }
 
         function getTodayDateStr() {
             const d = new Date();
             return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+
+        // 更新底部今日其他值排班，并标注序号及休息类型
+        function updateOtherValues() {
+            const todayStr = getTodayDateStr();
+            const grid = document.getElementById('otherValuesGrid');
+            const currentValue = document.getElementById('scheduleValue').value;
+            let html = '';
+            for (let v = 1; v <= 5; v++) {
+                const { schedule, cyclePos } = getScheduleByDate(todayStr, v);
+                let cls = 'badge-rest';
+                let displayText = '';
+                if (schedule === '中班') {
+                    cls = 'badge-work';
+                    displayText = `中班 ${cyclePos === 1 ? '①' : '②'}`;
+                } else if (schedule === '白班') {
+                    cls = 'badge-day';
+                    displayText = `白班 ${cyclePos === 4 ? '①' : '②'}`;
+                } else if (schedule === '零点') {
+                    cls = 'badge-night';
+                    displayText = `零点 ${cyclePos === 7 ? '①' : '②'}`;
+                } else { // 休息
+                    if (cyclePos === 3) {
+                        displayText = '中休';
+                    } else if (cyclePos === 6) {
+                        displayText = '白休';
+                    } else if (cyclePos === 9) {
+                        displayText = '大休①';
+                    } else if (cyclePos === 10) {
+                        displayText = '大休②';
+                    } else {
+                        displayText = '休'; // 保险
+                    }
+                }
+                const isCurrent = v == currentValue;
+                html += `
+                <div class="other-item" ${isCurrent ? 'style="border:2px solid #ff9500;"' : ''}>
+                    <div class="other-value-name">${v}值</div>
+                    <div class="other-schedule ${cls}">${displayText}</div>
+                </div>
+                `;
+            }
+            grid.innerHTML = html;
         }
 
         function renderMonthCalendar() {
@@ -457,6 +553,9 @@
                 html += '</tr>';
             });
             tbody.innerHTML = html;
+
+            // 更新底部今日其他值
+            updateOtherValues();
         }
 
         window.openSettingsModal = function() {
