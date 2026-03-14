@@ -126,7 +126,7 @@
         .calendar-table td {
             border: 1px solid #ecf3fa;
             text-align: center;
-            padding: 4px 2px;
+            padding: 6px 1px;        /* 稍微增加垂直内边距，让大日期更舒适 */
             font-size: 11px;
             width: 14.28%;
             cursor: pointer;
@@ -134,9 +134,10 @@
         .calendar-table td:hover {
             background: #f0f8ff;
         }
+        /* 日期数字 —— 调大（原来12px → 16px） */
         .date-num {
             font-weight: 600;
-            font-size: 12px;
+            font-size: 20px;          /* 增大的主要修改 */
             margin-bottom: 2px;
             display: flex;
             align-items: center;
@@ -144,12 +145,13 @@
             gap: 2px;
             flex-wrap: wrap;
         }
+        /* 排班标签 —— 稍微调大以适应整体比例 */
         .schedule-badge {
             display: inline-block;
-            padding: 1px 2px;
-            border-radius: 10px;
-            font-size: 9px;
-            min-width: 32px;
+            padding: 2px 3px;
+            border-radius: 12px;
+            font-size: 12px;           /* 从9px稍微增大 */
+            min-width: 36px;            /* 加宽一点避免拥挤 */
         }
         .badge-work { background: #e2f0ff; color: #0057b3; }
         .badge-day  { background: #e6f7e6; color: #1e7a1e; }
@@ -163,11 +165,12 @@
             color: #d45a00;
         }
         .today-tag {
-            font-size: 7px;
+            font-size: 10px;            /* 从7px稍微调大，配合大日期 */
             background: #ff9500;
             color: white;
             padding: 0 3px;
             border-radius: 6px;
+            line-height: 1.2;
         }
         .weekend .date-num {
             color: #d32f2f;
@@ -236,9 +239,9 @@
             color: #1e3b5c;
         }
         .other-schedule {
-            font-size: 9px;
-            padding: 2px 2px;
-            border-radius: 10px;
+            font-size: 12px;
+            padding: 4px 4px;
+            border-radius: 12px;
             margin-top: 2px;
             white-space: nowrap;
         }
@@ -350,15 +353,15 @@
         </table>
     </div>
 
-    <!-- <div class="tips-footer">
-        <div class="legend">
-            <span><span class="color-dot dot-work"></span> 中班</span>
-            <span><span class="color-dot dot-day"></span> 白班</span>
-            <span><span class="color-dot dot-night"></span> 零点</span>
-            <span><span class="color-dot dot-rest"></span> 休息</span>
-        </div>
-        🟡 橙色 = 今天
-    </div> -->
+<!--    <div class="tips-footer">-->
+<!--        <div class="legend">-->
+<!--            <span><span class="color-dot dot-work"></span> 中班</span>-->
+<!--            <span><span class="color-dot dot-day"></span> 白班</span>-->
+<!--            <span><span class="color-dot dot-night"></span> 零点</span>-->
+<!--            <span><span class="color-dot dot-rest"></span> 休息</span>-->
+<!--        </div>-->
+<!--        🟡 橙色 = 今天-->
+<!--    </div>-->
 
     <!-- 所选日期排班 -->
     <div class="other-values">
