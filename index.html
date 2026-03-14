@@ -15,9 +15,15 @@
             background: #f0f2f5;
             padding: 8px;
             min-height: 100vh;
+            /* 垂直水平居中 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         .card {
             width: 100%;
+            max-width: 450px;          /* 大屏宽度限制 */
             background: white;
             border-radius: 20px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.1);
@@ -90,7 +96,7 @@
         /* 🔥 关键：手机一屏显示，禁止横向滚动 */
         .calendar-wrapper {
             width: 100%;
-            overflow: hidden; 
+            overflow: hidden;
         }
         .calendar-table {
             width: 100%;
@@ -203,11 +209,14 @@
             font-weight: 600;
             color: #1f4970;
         }
-        .base-row input {
+        .base-row input,
+        .base-row select {
             flex: 1;
             padding: 6px;
             border-radius: 20px;
             border: 1px solid #c2d6e8;
+            background: white;
+            font-size: 13px;
         }
         .modal-actions {
             display: flex;
@@ -235,7 +244,7 @@
 
 <div class="card">
     <div class="header">
-        <h1>🗓️ 排班日历 <small>四值零点 2026-03-14</small></h1>
+        <h1>🗓️ 排班日历 </h1>
         <button class="settings-btn" onclick="openSettingsModal()">设置</button>
     </div>
 
@@ -259,9 +268,9 @@
     <div class="calendar-wrapper">
         <table class="calendar-table" id="calendarTable">
             <thead>
-                <tr>
-                    <th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th><th>日</th>
-                </tr>
+            <tr>
+                <th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th><th>日</th>
+            </tr>
             </thead>
             <tbody id="calendarBody"></tbody>
         </table>
@@ -285,6 +294,19 @@
             🌙 修改任意值，其余自动 ±2天
         </div>
         <div id="baseInputsGrid"></div>
+
+        <!-- 新增：默认显示值选择 -->
+        <div class="base-row">
+            <label>默认值</label>
+            <select id="defaultValueSelect">
+                <option value="1">一值</option>
+                <option value="2">二值</option>
+                <option value="3">三值</option>
+                <option value="4">四值</option>
+                <option value="5">五值</option>
+            </select>
+        </div>
+
         <div class="modal-actions">
             <button class="cancel-btn" onclick="closeSettingsModal()">取消</button>
             <button class="save-btn" onclick="saveAllBaseDates()">保存</button>
@@ -296,7 +318,7 @@
     (function() {
         const OFFSET_FIXED = 6;
         const PRESET_BASE4_ZERO = '2026-03-14';
-        
+
         function calculateBase1FromBase4(base4Str) {
             const base4 = new Date(base4Str);
             base4.setDate(base4.getDate() - 6);
@@ -449,6 +471,11 @@
                 </div>`;
             }
             grid.innerHTML = html;
+
+            // 设置默认值下拉框的当前值
+            const defaultVal = localStorage.getItem('defaultScheduleValue') || '1';
+            document.getElementById('defaultValueSelect').value = defaultVal;
+
             document.getElementById('settingsModal').style.display = 'flex';
         };
 
@@ -457,15 +484,30 @@
         };
 
         window.saveAllBaseDates = function() {
+            // 保存零点日期配置（基于一值重新生成）
             const v1 = document.getElementById('baseDate1').value;
             baseDateConfig = generateFullConfigFromBase1Zero(v1);
             saveFullConfigToStorage(baseDateConfig);
+
+            // 保存默认显示值
+            const defaultVal = document.getElementById('defaultValueSelect').value;
+            localStorage.setItem('defaultScheduleValue', defaultVal);
+            // 立即应用默认值到主界面
+            document.getElementById('scheduleValue').value = defaultVal;
+
             closeSettingsModal();
             renderMonthCalendar();
         };
 
         window.onload = function() {
+            // 读取默认显示值，并设置到下拉框
+            const savedDefault = localStorage.getItem('defaultScheduleValue');
+            if (savedDefault) {
+                document.getElementById('scheduleValue').value = savedDefault;
+            }
+            // 初始渲染
             renderMonthCalendar();
+            // 监听切换事件
             document.getElementById('scheduleValue').addEventListener('change', renderMonthCalendar);
             document.getElementById('monthPicker').addEventListener('change', renderMonthCalendar);
         };
