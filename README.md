@@ -1,1 +1,1 @@
-基于https://zh907611631-bot.github.io/schedule-tool/ 项目，利用豆包与Deepseek做的不同运行值排班表查看网页
+基于https://zh907611631-bot.github.io/schedule-tool/ 项目，利用豆包与Deepseek做的不同运行值排班表查看网页，适用于五班三倒模式
