@@ -117,8 +117,8 @@
             table-layout: fixed;
         }
         .calendar-table th {
-            padding: 6px 2px;
-            font-size: 11px;
+            padding: 8px 2px 4px;      /* 增加一点顶部空间 */
+            font-size: 12px;            /* 周几稍微大一点 */
             color: #1e3b5c;
             border-bottom: 2px solid #cbd6e4;
             font-weight: 600;
@@ -126,7 +126,7 @@
         .calendar-table td {
             border: 1px solid #ecf3fa;
             text-align: center;
-            padding: 4px 2px;
+            padding: 8px 1px;           /* 垂直内边距增加，让大元素透气 */
             font-size: 11px;
             width: 14.28%;
             cursor: pointer;
@@ -134,22 +134,27 @@
         .calendar-table td:hover {
             background: #f0f8ff;
         }
+        /* 日期数字 —— 再调大一些（原来16px → 20px） */
         .date-num {
             font-weight: 600;
-            font-size: 12px;
-            margin-bottom: 2px;
+            font-size: 20px;             /* 明显增大 */
+            margin-bottom: 3px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 2px;
             flex-wrap: wrap;
+            line-height: 1.2;            /* 控制行高 */
         }
+        /* 排班标签 —— 也明显增大（原来10px → 13px） */
         .schedule-badge {
             display: inline-block;
-            padding: 1px 2px;
-            border-radius: 10px;
-            font-size: 9px;
-            min-width: 32px;
+            padding: 3px 4px;
+            border-radius: 16px;
+            font-size: 13px;              /* 变大 */
+            min-width: 44px;               /* 适应更大字体 */
+            font-weight: 500;
+            white-space: nowrap;
         }
         .badge-work { background: #e2f0ff; color: #0057b3; }
         .badge-day  { background: #e6f7e6; color: #1e7a1e; }
@@ -163,11 +168,13 @@
             color: #d45a00;
         }
         .today-tag {
-            font-size: 7px;
+            font-size: 10px;               /* 稍微增大，配合大日期 */
             background: #ff9500;
             color: white;
-            padding: 0 3px;
-            border-radius: 6px;
+            padding: 0 4px;
+            border-radius: 8px;
+            line-height: 1.4;
+            margin-left: 2px;
         }
         .weekend .date-num {
             color: #d32f2f;
@@ -183,14 +190,14 @@
         }
         .legend {
             display: flex;
-            gap: 8px;
+            gap: 12px;                  /* 图例间距稍大 */
             flex-wrap: wrap;
             justify-content: center;
             margin-bottom: 4px;
         }
         .color-dot {
-            width: 10px;
-            height: 10px;
+            width: 12px;                /* 稍微大一点 */
+            height: 12px;
             border-radius: 50%;
             display: inline-block;
         }
@@ -199,7 +206,7 @@
         .dot-night { background: #e3eafc; border: 1px solid #283593; }
         .dot-rest { background: #f2f2f2; border: 1px solid #8f9eb0; }
 
-        /* 所选日期排班样式 */
+        /* 所选日期排班样式 (保持相对紧凑，但也可以适当增大) */
         .other-values {
             margin-top: 12px;
             padding: 10px 8px;
@@ -208,7 +215,7 @@
             border: 1px solid #d4e2f0;
         }
         .other-title {
-            font-size: 11px;
+            font-size: 12px;               /* 稍微增大 */
             color: #2c5779;
             margin-bottom: 8px;
             font-weight: 500;
@@ -223,23 +230,23 @@
         }
         .other-item {
             flex: 1 0 auto;
-            min-width: 55px;
+            min-width: 60px;                /* 加宽一点 */
             background: white;
             border-radius: 16px;
-            padding: 6px 2px;
+            padding: 8px 2px;                /* 内边距增加 */
             text-align: center;
             border: 1px solid #d4e2f0;
         }
         .other-value-name {
-            font-size: 11px;
+            font-size: 13px;                  /* 值名称增大 */
             font-weight: 600;
             color: #1e3b5c;
         }
         .other-schedule {
-            font-size: 9px;
-            padding: 2px 2px;
-            border-radius: 10px;
-            margin-top: 2px;
+            font-size: 11px;                   /* 底部排班标签稍微增大 */
+            padding: 3px 2px;
+            border-radius: 12px;
+            margin-top: 3px;
             white-space: nowrap;
         }
 
