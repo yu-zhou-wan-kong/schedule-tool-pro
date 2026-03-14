@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>排班日历 · 选中高亮 + 滑动切月</title>
+    <title>排班日历 · 选中底色 + 滑动切月</title>
     <style>
         * {
             margin: 0;
@@ -107,7 +107,7 @@
         .calendar-wrapper {
             width: 100%;
             overflow: hidden;
-            touch-action: pan-y;        /* 保留垂直滚动，水平手势我们自行处理 */
+            touch-action: pan-y;        /* 保留垂直滚动，水平手势自行处理 */
         }
         .calendar-table {
             width: 100%;
@@ -162,10 +162,9 @@
         .today-highlight .date-num {
             color: #d45a00;
         }
-        /* ===== 新增：选中日期的醒目样式 ===== */
+        /* ===== 修改：选中日期改用醒目的浅蓝色背景，去掉边框 ===== */
         .calendar-table td.selected {
-            box-shadow: inset 0 0 0 3px #0077ff;  /* 内蓝框，不改变布局，与today背景叠加更明显 */
-            border-radius: 2px;
+            background-color: #b8d9ff;  /* 柔和蓝色背景，覆盖today背景 */
         }
         .today-tag {
             font-size: 10px;
@@ -315,7 +314,7 @@
 
 <!-- 个人标识 -->
 <div style="text-align: center; margin-bottom: 8px;">
-    <span style="font-size: 12px; color: #666;"> 宇宙万空 制作 · 点击日期高亮</span>
+    <span style="font-size: 12px; color: #666;"> 宇宙万空 制作 · 点击日期高亮（蓝色背景）</span>
 </div>
 
 <div class="card">
@@ -530,7 +529,7 @@
         const monthPicker = document.getElementById('monthPicker');
         let [year, month] = monthPicker.value.split('-').map(Number);
 
-        // === 智能保留选中日期（切换月份时尽量保留相同日）===
+        // 智能保留选中日期（切换月份时尽量保留相同日）
         const todayStr = getTodayDateStr();
         const originalSelected = selectedDateStr;
         let newSelected = originalSelected;
@@ -538,7 +537,6 @@
         if (!newSelected || !newSelected.startsWith(`${year}-${String(month).padStart(2,'0')}`)) {
             if (originalSelected) {
                 const [oy, om, od] = originalSelected.split('-').map(Number);
-                // 计算当月最大天数
                 const lastDay = new Date(year, month, 0).getDate();
                 const targetDay = Math.min(od, lastDay);
                 newSelected = `${year}-${String(month).padStart(2,'0')}-${String(targetDay).padStart(2,'0')}`;
@@ -596,7 +594,7 @@
                     else if (schedule === '零点') cls = 'badge-night';
 
                     const isToday = cell.dateStr === todayStr;
-                    const isSelected = cell.dateStr === selectedDateStr;   // 高亮判断
+                    const isSelected = cell.dateStr === selectedDateStr;
                     const todayCls = isToday ? 'today-highlight' : '';
                     const selectedCls = isSelected ? 'selected' : '';
 
@@ -614,10 +612,10 @@
         updateOtherValues(selectedDateStr);
     }
 
-    // 点击日期：高亮 + 底部更新 (重新渲染即可)
+    // 点击日期：高亮 + 底部更新
     window.selectDate = function(dateStr) {
         selectedDateStr = dateStr;
-        renderMonthCalendar();   // 重新绘制，高亮和底部一起更新
+        renderMonthCalendar();
     };
 
     window.goToToday = function() {
