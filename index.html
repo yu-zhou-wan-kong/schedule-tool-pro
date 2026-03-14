@@ -106,10 +106,11 @@
             min-height: 40px;
         }
 
-        /* 🔥 关键：手机一屏显示，禁止横向滚动 */
+        /* 🔥 关键：手机一屏显示，禁止横向滚动 + 优化触摸 */
         .calendar-wrapper {
             width: 100%;
             overflow: hidden;
+            touch-action: pan-y;        /* 允许垂直滚动，同时保留我们自己的水平滑动手势 */
         }
         .calendar-table {
             width: 100%;
@@ -318,7 +319,7 @@
 
 <div class="card">
     <div class="header">
-        <h1>🗓️ 排班日历 </h1>
+        <h1>🗓️ 排班日历 (可左右滑动)</h1>
         <div>
             <button class="today-btn" onclick="goToToday()">今天</button>
             <button class="settings-btn" onclick="openSettingsModal()">设置</button>
@@ -697,6 +698,70 @@
             document.getElementById('scheduleValue').addEventListener('change', renderMonthCalendar);
             document.getElementById('monthPicker').addEventListener('change', renderMonthCalendar);
         };
+
+        // ---------- 新增：左右滑动切换月份 (手机完美适配) ----------
+        const wrapper = document.querySelector('.calendar-wrapper');
+        if (wrapper) {
+            let touchStartX = 0, touchStartY = 0;
+            let swiping = false;
+            const SWIPE_THRESHOLD = 30;      // 触发滑动的最小水平距离
+            const MOVE_THRESHOLD = 10;        // 移动过程中开始阻止滚动的阈值
+
+            wrapper.addEventListener('touchstart', function(e) {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+                swiping = false;
+            }, { passive: true });
+
+            wrapper.addEventListener('touchmove', function(e) {
+                if (touchStartX === undefined) return;
+                const currentX = e.touches[0].clientX;
+                const currentY = e.touches[0].clientY;
+                const deltaX = currentX - touchStartX;
+                const deltaY = currentY - touchStartY;
+                // 如果水平移动占主导且超过阈值，阻止默认滚动（让滑动更跟手）
+                if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > MOVE_THRESHOLD) {
+                    e.preventDefault();      // 阻止页面垂直滚动
+                    swiping = true;
+                }
+            }, { passive: false });
+
+            wrapper.addEventListener('touchend', function(e) {
+                if (touchStartX === undefined) return;
+                const deltaX = e.changedTouches[0].clientX - touchStartX;
+                const deltaY = e.changedTouches[0].clientY - touchStartY;
+                if (swiping && Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(deltaY)) {
+                    // 左右滑动切换月份
+                    const monthPicker = document.getElementById('monthPicker');
+                    let [year, month] = monthPicker.value.split('-').map(Number);
+                    if (deltaX < 0) { // 左滑 -> 下一月
+                        month += 1;
+                        if (month > 12) {
+                            month = 1;
+                            year += 1;
+                        }
+                    } else { // 右滑 -> 上一月
+                        month -= 1;
+                        if (month < 1) {
+                            month = 12;
+                            year -= 1;
+                        }
+                    }
+                    const newMonthStr = `${year}-${String(month).padStart(2, '0')}`;
+                    monthPicker.value = newMonthStr;
+                    renderMonthCalendar();   // 重新渲染日历
+                }
+                touchStartX = undefined;
+                swiping = false;
+            }, { passive: true });
+
+            wrapper.addEventListener('touchcancel', function(e) {
+                touchStartX = undefined;
+                swiping = false;
+            }, { passive: true });
+        }
+        // ---------- 滑动功能结束 ----------
+
     })();
 </script>
 </body>
