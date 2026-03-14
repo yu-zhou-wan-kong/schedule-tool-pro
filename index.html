@@ -54,6 +54,18 @@
             border-radius: 16px;
             white-space: nowrap;
         }
+        .today-btn {
+            background: white;
+            border: 1.5px solid #ff9500;
+            color: #ff9500;
+            font-weight: 500;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            min-height: 30px;
+            margin-right: 4px;
+            cursor: pointer;
+        }
         .settings-btn {
             background: white;
             border: 1.5px solid #b8ccdd;
@@ -63,6 +75,7 @@
             border-radius: 20px;
             font-size: 12px;
             min-height: 30px;
+            cursor: pointer;
         }
         .selector-panel {
             display: flex;
@@ -116,11 +129,20 @@
             padding: 4px 2px;
             font-size: 11px;
             width: 14.28%;
+            cursor: pointer;
+        }
+        .calendar-table td:hover {
+            background: #f0f8ff;
         }
         .date-num {
             font-weight: 600;
             font-size: 12px;
             margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            flex-wrap: wrap;
         }
         .schedule-badge {
             display: inline-block;
@@ -177,7 +199,7 @@
         .dot-night { background: #e3eafc; border: 1px solid #283593; }
         .dot-rest { background: #f2f2f2; border: 1px solid #8f9eb0; }
 
-        /* 今日其他值排班样式 */
+        /* 所选日期排班样式 */
         .other-values {
             margin-top: 12px;
             padding: 10px 8px;
@@ -286,6 +308,7 @@
 </head>
 <body>
 
+<!-- 个人标识 -->
 <div style="text-align: center; margin-bottom: 8px;">
     <span style="font-size: 12px; color: #666;"> 宇宙万空 制作</span>
 </div>
@@ -293,7 +316,10 @@
 <div class="card">
     <div class="header">
         <h1>🗓️ 排班日历 </h1>
-        <button class="settings-btn" onclick="openSettingsModal()">设置</button>
+        <div>
+            <button class="today-btn" onclick="goToToday()">今天</button>
+            <button class="settings-btn" onclick="openSettingsModal()">设置</button>
+        </div>
     </div>
 
     <div class="selector-panel">
@@ -334,9 +360,9 @@
         🟡 橙色 = 今天
     </div>
 
-    <!-- 今日其他值排班 -->
+    <!-- 所选日期排班 -->
     <div class="other-values">
-        <div class="other-title">📋 今日其他值排班（基于系统日期）</div>
+        <div class="other-title" id="selectedDateTitle">📅 所选日期排班</div>
         <div class="other-grid" id="otherValuesGrid">
             <!-- 动态生成 -->
         </div>
@@ -374,6 +400,9 @@
     (function() {
         const OFFSET_FIXED = 6;
         const PRESET_BASE4_ZERO = '2026-03-14';
+
+        // 当前选中的日期（默认为今天）
+        let selectedDateStr = '';
 
         function calculateBase1FromBase4(base4Str) {
             const base4 = new Date(base4Str);
@@ -458,14 +487,22 @@
             return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         }
 
-        // 更新底部今日其他值排班，并标注序号及休息类型
-        function updateOtherValues() {
-            const todayStr = getTodayDateStr();
+        // 更新底部所选日期排班
+        function updateOtherValues(dateStr) {
             const grid = document.getElementById('otherValuesGrid');
             const currentValue = document.getElementById('scheduleValue').value;
+            const titleEl = document.getElementById('selectedDateTitle');
+            // 格式化显示日期
+            if (dateStr) {
+                const [y, m, d] = dateStr.split('-');
+                titleEl.innerText = `📅 ${y}年${parseInt(m)}月${parseInt(d)}日 排班`;
+            } else {
+                titleEl.innerText = '📅 所选日期排班';
+            }
+
             let html = '';
             for (let v = 1; v <= 5; v++) {
-                const { schedule, cyclePos } = getScheduleByDate(todayStr, v);
+                const { schedule, cyclePos } = getScheduleByDate(dateStr, v);
                 let cls = 'badge-rest';
                 let displayText = '';
                 if (schedule === '中班') {
@@ -501,6 +538,7 @@
             grid.innerHTML = html;
         }
 
+        // 渲染日历
         function renderMonthCalendar() {
             const selectedValue = document.getElementById('scheduleValue').value;
             const [year, month] = document.getElementById('monthPicker').value.split('-');
@@ -534,6 +572,7 @@
 
             const tbody = document.getElementById('calendarBody');
             let html = '';
+
             rows.forEach(row => {
                 html += '<tr>';
                 row.forEach(cell => {
@@ -548,7 +587,9 @@
 
                         const isToday = cell.dateStr === todayStr;
                         const todayCls = isToday ? 'today-highlight' : '';
-                        html += `<td class="${todayCls}">`;
+
+                        // 添加点击事件
+                        html += `<td class="${todayCls}" onclick="selectDate('${cell.dateStr}')">`;
                         html += `<div class="date-num">${cell.day}${isToday ? '<span class="today-tag">今</span>' : ''}</div>`;
                         html += `<div class="schedule-badge ${cls}">${schedule}</div>`;
                         html += '</td>';
@@ -558,9 +599,39 @@
             });
             tbody.innerHTML = html;
 
-            // 更新底部今日其他值
-            updateOtherValues();
+            // 如果当前选中的日期不在本月，则默认选中今天（或本月第一天）
+            if (!selectedDateStr || !selectedDateStr.startsWith(`${year}-${month}`)) {
+                // 尝试选中今天，如果今天在本月则用今天，否则用本月第一天
+                const firstDayStr = `${year}-${String(month).padStart(2,'0')}-01`;
+                if (todayStr.startsWith(`${year}-${month}`)) {
+                    selectedDateStr = todayStr;
+                } else {
+                    selectedDateStr = firstDayStr;
+                }
+            }
+            // 更新底部排班
+            updateOtherValues(selectedDateStr);
         }
+
+        // 日期选择函数（暴露给全局）
+        window.selectDate = function(dateStr) {
+            selectedDateStr = dateStr;
+            updateOtherValues(dateStr);
+        };
+
+        // 跳转到今天
+        window.goToToday = function() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            selectedDateStr = `${year}-${month}-${day}`;
+
+            // 设置月份选择器
+            document.getElementById('monthPicker').value = `${year}-${month}`;
+            // 重新渲染日历
+            renderMonthCalendar();
+        };
 
         window.openSettingsModal = function() {
             const grid = document.getElementById('baseInputsGrid');
@@ -608,8 +679,17 @@
             if (savedDefault) {
                 document.getElementById('scheduleValue').value = savedDefault;
             }
+            // 初始化选中日期为今天
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            selectedDateStr = `${year}-${month}-${day}`;
+            document.getElementById('monthPicker').value = `${year}-${month}`;
+
             // 初始渲染
             renderMonthCalendar();
+
             // 监听切换事件
             document.getElementById('scheduleValue').addEventListener('change', renderMonthCalendar);
             document.getElementById('monthPicker').addEventListener('change', renderMonthCalendar);
