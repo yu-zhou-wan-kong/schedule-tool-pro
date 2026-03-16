@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>排班日历 · 选中底色 + 滑动切月</title>
+    <title>排班日历 · 仅显示API节日名称</title>
     <style>
+        /* ========== 基础样式 (完整保留) ========== */
         * {
             margin: 0;
             padding: 0;
@@ -17,7 +18,6 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
         }
         .card {
@@ -107,7 +107,7 @@
         .calendar-wrapper {
             width: 100%;
             overflow: hidden;
-            touch-action: pan-y;        /* 保留垂直滚动，水平手势自行处理 */
+            touch-action: pan-y;
         }
         .calendar-table {
             width: 100%;
@@ -133,7 +133,6 @@
         .calendar-table td:hover {
             background: #f0f8ff;
         }
-        /* 日期数字 —— 大而清晰 */
         .date-num {
             font-weight: 600;
             font-size: 20px;
@@ -162,9 +161,8 @@
         .today-highlight .date-num {
             color: #d45a00;
         }
-        /* ===== 修改：选中日期改用醒目的浅蓝色背景，去掉边框 ===== */
         .calendar-table td.selected {
-            background-color: #b8d9ff;  /* 柔和蓝色背景，覆盖today背景 */
+            background-color: #b8d9ff;
         }
         .today-tag {
             font-size: 10px;
@@ -174,36 +172,38 @@
             border-radius: 6px;
             line-height: 1.2;
         }
-        .weekend .date-num {
-            color: #d32f2f;
-        }
-        .tips-footer {
-            margin-top: 14px;
-            text-align: center;
-            color: #5e7a99;
-            background: #f3f9ff;
-            padding: 10px;
-            border-radius: 22px;
-            font-size: 11px;
-        }
-        .legend {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-bottom: 4px;
-        }
-        .color-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
+        /* 节日标签 (红色) */
+        .holiday-tag {
             display: inline-block;
+            background: #ff6b6b;
+            color: white;
+            font-size: 9px;
+            padding: 1px 3px;
+            border-radius: 4px;
+            margin-left: 2px;
+            line-height: 1.2;
+            white-space: nowrap;
+            max-width: 40px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        .dot-work { background: #e2f0ff; border: 1px solid #0077ff; }
-        .dot-day { background: #e6f7e6; border: 1px solid #1e7a1e; }
-        .dot-night { background: #e3eafc; border: 1px solid #283593; }
-        .dot-rest { background: #f2f2f2; border: 1px solid #8f9eb0; }
-
+        .holiday-status {
+            font-size: 10px;
+            margin-top: 6px;
+            padding: 4px;
+            border-radius: 12px;
+            background: #f0f7ff;
+            color: #2c5779;
+            text-align: center;
+        }
+        .holiday-status.success {
+            background: #e6f7e6;
+            color: #1e7a1e;
+        }
+        .holiday-status.error {
+            background: #ffe6e6;
+            color: #b30000;
+        }
         .other-values {
             margin-top: 12px;
             padding: 10px 8px;
@@ -247,7 +247,7 @@
             white-space: nowrap;
         }
 
-        /* 弹窗简化 */
+        /* 弹窗样式 */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -312,14 +312,13 @@
 </head>
 <body>
 
-<!-- 个人标识 -->
 <div style="text-align: center; margin-bottom: 8px;">
-    <span style="font-size: 12px; color: #666;"> 宇宙万空 制作 · 点击日期高亮（蓝色背景）</span>
+    <span style="font-size: 12px; color: #666;"> 宇宙万空 制作 </span>
 </div>
 
 <div class="card">
     <div class="header">
-        <h1>🗓️ 排班日历 (左右滑动)</h1>
+        <h1>🗓️ 排班日历 (仅API节日)</h1>
         <div>
             <button class="today-btn" onclick="goToToday()">今天</button>
             <button class="settings-btn" onclick="openSettingsModal()">设置</button>
@@ -354,12 +353,13 @@
         </table>
     </div>
 
+    <!-- 节假日加载状态提示 -->
+    <div id="holidayStatus" class="holiday-status">⏳ 正在加载节假日...</div>
+
     <!-- 所选日期排班 (五值对比) -->
     <div class="other-values">
         <div class="other-title" id="selectedDateTitle">📅 所选日期排班</div>
-        <div class="other-grid" id="otherValuesGrid">
-            <!-- 动态生成 -->
-        </div>
+        <div class="other-grid" id="otherValuesGrid"></div>
     </div>
 </div>
 
@@ -367,7 +367,7 @@
 <div class="modal-overlay" id="settingsModal" onclick="if(event.target===this) closeSettingsModal()">
     <div class="modal-card" onclick="event.stopPropagation()">
         <h3>📌 设置第一个零点 (一值)</h3>
-        <div style="background:#e8f0fe;padding:8px;margin:10px 0;border-radius:12px;text-align:center;font-size:12px;">
+        <div style="background:#e8f0fe;padding:8px;margin:10px 0;border-radius:12px;font-size:12px;">
             🌙 修改一值日期，其余自动 ±2天
         </div>
         <div id="baseInputsGrid"></div>
@@ -391,353 +391,363 @@
 </div>
 
 <script>
-(function() {
-    const OFFSET_FIXED = 6;
-    const PRESET_BASE4_ZERO = '2026-03-14';
+    (function() {
+        // ---------- 固定排班参数 ----------
+        const OFFSET_FIXED = 6;
+        const PRESET_BASE4_ZERO = '2026-03-14';
 
-    let selectedDateStr = '';          // 当前选中的日期 (YYYY-MM-DD)
+        // ---------- 全局变量 ----------
+        let selectedDateStr = '';
+        let baseDateConfig = {};
+        // 存储节假日数据，格式: { "2026-01-01": { name: "元旦", isHoliday: true }, ... }
+        let holidayMap = {};
+        let isLoading = false;
 
-    function calculateBase1FromBase4(base4Str) {
-        const base4 = new Date(base4Str);
-        base4.setDate(base4.getDate() - 6);
-        const y = base4.getFullYear();
-        const m = String(base4.getMonth() + 1).padStart(2, '0');
-        const d = String(base4.getDate()).padStart(2, '0');
-        return `${y}-${m}-${d}`;
-    }
+        const statusEl = document.getElementById('holidayStatus');
 
-    const DEFAULT_BASE1_ZERO = calculateBase1FromBase4(PRESET_BASE4_ZERO);
-
-    function loadFullConfigFromStorage() {
-        try {
-            const stored = localStorage.getItem('scheduleFullConfig_zero_preset4');
-            if (stored) return JSON.parse(stored);
-        } catch (e) {}
-        return generateFullConfigFromBase1Zero(DEFAULT_BASE1_ZERO);
-    }
-
-    function generateFullConfigFromBase1Zero(base1ZeroStr) {
-        const base1 = new Date(base1ZeroStr);
-        const config = {};
-        for (let v = 1; v <= 5; v++) {
-            const d = new Date(base1);
-            d.setDate(base1.getDate() + (v - 1) * 2);
-            config[v] = {
-                date: `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,
-                cycleOffset: OFFSET_FIXED
-            };
+        // ========== 1. 初始化排班基准日期 (与原逻辑相同) ==========
+        function calculateBase1FromBase4(base4Str) {
+            const base4 = new Date(base4Str);
+            base4.setDate(base4.getDate() - 6);
+            return `${base4.getFullYear()}-${String(base4.getMonth()+1).padStart(2,'0')}-${String(base4.getDate()).padStart(2,'0')}`;
         }
-        return config;
-    }
+        const DEFAULT_BASE1_ZERO = calculateBase1FromBase4(PRESET_BASE4_ZERO);
 
-    function regenerateConfigFromOneValue(changedValue, newDateStr) {
-        const newConfig = {};
-        newConfig[changedValue] = { date: newDateStr, cycleOffset: OFFSET_FIXED };
-        for (let v = changedValue + 1; v <= 5; v++) {
-            const prev = new Date(newConfig[v-1].date);
-            prev.setDate(prev.getDate() + 2);
-            newConfig[v] = {
-                date: `${prev.getFullYear()}-${String(prev.getMonth()+1).padStart(2,'0')}-${String(prev.getDate()).padStart(2,'0')}`,
-                cycleOffset: OFFSET_FIXED
-            };
-        }
-        for (let v = changedValue - 1; v >= 1; v--) {
-            const next = new Date(newConfig[v+1].date);
-            next.setDate(next.getDate() - 2);
-            newConfig[v] = {
-                date: `${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}-${String(next.getDate()).padStart(2,'0')}`,
-                cycleOffset: OFFSET_FIXED
-            };
-        }
-        return newConfig;
-    }
-
-    let baseDateConfig = loadFullConfigFromStorage();
-
-    function saveFullConfigToStorage(config) {
-        localStorage.setItem('scheduleFullConfig_zero_preset4', JSON.stringify(config));
-    }
-
-    function getScheduleByDate(targetDate, value) {
-        const config = baseDateConfig[value];
-        const baseZeroDate = new Date(config.date);
-        const t = new Date(targetDate);
-        const dayDiff = Math.floor((t - baseZeroDate) / 86400000);
-        const cyclePos = ((6 + dayDiff) % 10 + 10) % 10 + 1;
-
-        let schedule = '休息';
-        switch(cyclePos) {
-            case 1: case 2: schedule = '中班'; break;
-            case 4: case 5: schedule = '白班'; break;
-            case 7: case 8: schedule = '零点'; break;
-        }
-        return { schedule, cyclePos };
-    }
-
-    function getTodayDateStr() {
-        const d = new Date();
-        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    }
-
-    // 更新底部五值排班
-    function updateOtherValues(dateStr) {
-        const grid = document.getElementById('otherValuesGrid');
-        const currentValue = document.getElementById('scheduleValue').value;
-        const titleEl = document.getElementById('selectedDateTitle');
-        if (dateStr) {
-            const [y, m, d] = dateStr.split('-');
-            titleEl.innerText = `📅 ${y}年${parseInt(m)}月${parseInt(d)}日 排班`;
-        } else {
-            titleEl.innerText = '📅 所选日期排班';
+        function loadFullConfigFromStorage() {
+            try {
+                const stored = localStorage.getItem('scheduleFullConfig_zero_preset4');
+                if (stored) return JSON.parse(stored);
+            } catch (e) {}
+            return generateFullConfigFromBase1Zero(DEFAULT_BASE1_ZERO);
         }
 
-        let html = '';
-        for (let v = 1; v <= 5; v++) {
-            const { schedule, cyclePos } = getScheduleByDate(dateStr, v);
-            let cls = 'badge-rest';
-            let displayText = '';
-            if (schedule === '中班') {
-                cls = 'badge-work';
-                displayText = `中班 ${cyclePos === 1 ? '①' : '②'}`;
-            } else if (schedule === '白班') {
-                cls = 'badge-day';
-                displayText = `白班 ${cyclePos === 4 ? '①' : '②'}`;
-            } else if (schedule === '零点') {
-                cls = 'badge-night';
-                displayText = `零点 ${cyclePos === 7 ? '①' : '②'}`;
-            } else {
-                if (cyclePos === 3) displayText = '中休';
-                else if (cyclePos === 6) displayText = '白休';
-                else if (cyclePos === 9) displayText = '大休①';
-                else if (cyclePos === 10) displayText = '大休②';
-                else displayText = '休';
+        function generateFullConfigFromBase1Zero(base1ZeroStr) {
+            const base1 = new Date(base1ZeroStr);
+            const config = {};
+            for (let v = 1; v <= 5; v++) {
+                const d = new Date(base1);
+                d.setDate(base1.getDate() + (v - 1) * 2);
+                config[v] = {
+                    date: `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,
+                    cycleOffset: OFFSET_FIXED
+                };
             }
-            const isCurrent = v == currentValue;
-            html += `
-                <div class="other-item" ${isCurrent ? 'style="border:2px solid #ff9500;"' : ''}>
-                    <div class="other-value-name">${v}值</div>
-                    <div class="other-schedule ${cls}">${displayText}</div>
-                </div>
-            `;
+            return config;
         }
-        grid.innerHTML = html;
-    }
 
-    // 渲染日历 + 高亮选中日期
-    function renderMonthCalendar() {
-        const selectedValue = document.getElementById('scheduleValue').value;
-        const monthPicker = document.getElementById('monthPicker');
-        let [year, month] = monthPicker.value.split('-').map(Number);
+        baseDateConfig = loadFullConfigFromStorage();
 
-        // 智能保留选中日期（切换月份时尽量保留相同日）
-        const todayStr = getTodayDateStr();
-        const originalSelected = selectedDateStr;
-        let newSelected = originalSelected;
+        function saveFullConfigToStorage(config) {
+            localStorage.setItem('scheduleFullConfig_zero_preset4', JSON.stringify(config));
+        }
 
-        if (!newSelected || !newSelected.startsWith(`${year}-${String(month).padStart(2,'0')}`)) {
-            if (originalSelected) {
-                const [oy, om, od] = originalSelected.split('-').map(Number);
-                const lastDay = new Date(year, month, 0).getDate();
-                const targetDay = Math.min(od, lastDay);
-                newSelected = `${year}-${String(month).padStart(2,'0')}-${String(targetDay).padStart(2,'0')}`;
-            } else {
-                if (todayStr.startsWith(`${year}-${month}`)) {
-                    newSelected = todayStr;
+        // ========== 2. 获取排班信息 ==========
+        function getScheduleByDate(targetDate, value) {
+            const config = baseDateConfig[value];
+            const baseZeroDate = new Date(config.date);
+            const t = new Date(targetDate);
+            const dayDiff = Math.floor((t - baseZeroDate) / 86400000);
+            const cyclePos = ((6 + dayDiff) % 10 + 10) % 10 + 1;
+
+            let schedule = '休息';
+            switch(cyclePos) {
+                case 1: case 2: schedule = '中班'; break;
+                case 4: case 5: schedule = '白班'; break;
+                case 7: case 8: schedule = '零点'; break;
+            }
+            return { schedule, cyclePos };
+        }
+
+        // ========== 3. 工具函数 ==========
+        function getTodayDateStr() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+
+        // ========== 4. 从API获取节假日数据 (完全依赖API，无内置) ==========
+        async function fetchHolidaysForYear(year) {
+            if (isLoading) return;
+            isLoading = true;
+            updateStatus('info', `⏳ 正在获取 ${year} 年节假日数据...`);
+
+            try {
+                const url = `https://timor.tech/api/holiday/year/${year}/`;
+                const response = await fetch(url);
+                const result = await response.json();
+
+                console.log('API返回原始数据:', result);
+
+                if (result.code === 0 && result.holiday) {
+                    const yearData = {};
+                    for (const [mmdd, info] of Object.entries(result.holiday)) {
+                        if (info.date) {
+                            yearData[info.date] = {
+                                name: info.name,
+                                isHoliday: info.holiday === true
+                            };
+                        }
+                    }
+                    holidayMap = yearData;
+                    updateStatus('success', `✅ 已加载 ${year} 年节假日数据`);
+                    console.log('解析后的节假日数据:', holidayMap);
                 } else {
-                    newSelected = `${year}-${String(month).padStart(2,'0')}-01`;
+                    throw new Error('API返回数据格式异常');
                 }
+            } catch (error) {
+                console.error('获取节假日失败:', error);
+                holidayMap = {}; // 清空数据，不显示任何节日标签
+                updateStatus('error', '❌ 节假日加载失败，无内置数据');
+            } finally {
+                isLoading = false;
+                renderMonthCalendar(); // 重新渲染
             }
         }
-        selectedDateStr = newSelected;
 
-        // 构建日历
-        const firstDay = new Date(year, month - 1, 1);
-        const lastDay = new Date(year, month, 0);
-        const daysInMonth = lastDay.getDate();
-
-        let firstWeekday = firstDay.getDay() || 7;
-        let startCol = firstWeekday - 1;
-
-        const rows = [];
-        let currentDay = 1;
-
-        for (let r = 0; r < 6; r++) {
-            const row = [];
-            for (let c = 0; c < 7; c++) {
-                if (r === 0 && c < startCol) {
-                    row.push({ day: 0 });
-                } else if (currentDay <= daysInMonth) {
-                    const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(currentDay).padStart(2,'0')}`;
-                    row.push({ day: currentDay, dateStr });
-                    currentDay++;
-                } else {
-                    row.push({ day: 0 });
-                }
+        function updateStatus(type, msg) {
+            if (statusEl) {
+                statusEl.innerText = msg;
+                statusEl.className = 'holiday-status ' + type;
             }
-            rows.push(row);
-            if (currentDay > daysInMonth) break;
         }
 
-        const tbody = document.getElementById('calendarBody');
-        let html = '';
+        function loadHolidaysForCurrentMonth() {
+            const [year] = document.getElementById('monthPicker').value.split('-').map(Number);
+            fetchHolidaysForYear(year);
+        }
 
-        rows.forEach(row => {
-            html += '<tr>';
-            row.forEach(cell => {
-                if (cell.day === 0) {
-                    html += '<td style="background:#fafcfe;"></td>';
+        // ========== 5. 更新底部五值排班 (与原逻辑相同) ==========
+        function updateOtherValues(dateStr) {
+            const grid = document.getElementById('otherValuesGrid');
+            const currentValue = document.getElementById('scheduleValue').value;
+            const titleEl = document.getElementById('selectedDateTitle');
+            if (dateStr) {
+                const [y, m, d] = dateStr.split('-');
+                titleEl.innerText = `📅 ${y}年${parseInt(m)}月${parseInt(d)}日 排班`;
+            }
+
+            let html = '';
+            for (let v = 1; v <= 5; v++) {
+                const { schedule, cyclePos } = getScheduleByDate(dateStr, v);
+                let cls = 'badge-rest';
+                let displayText = '';
+                if (schedule === '中班') {
+                    cls = 'badge-work';
+                    displayText = `中班 ${cyclePos === 1 ? '①' : '②'}`;
+                } else if (schedule === '白班') {
+                    cls = 'badge-day';
+                    displayText = `白班 ${cyclePos === 4 ? '①' : '②'}`;
+                } else if (schedule === '零点') {
+                    cls = 'badge-night';
+                    displayText = `零点 ${cyclePos === 7 ? '①' : '②'}`;
                 } else {
-                    const { schedule } = getScheduleByDate(cell.dateStr, selectedValue);
-                    let cls = 'badge-rest';
-                    if (schedule === '中班') cls = 'badge-work';
-                    else if (schedule === '白班') cls = 'badge-day';
-                    else if (schedule === '零点') cls = 'badge-night';
-
-                    const isToday = cell.dateStr === todayStr;
-                    const isSelected = cell.dateStr === selectedDateStr;
-                    const todayCls = isToday ? 'today-highlight' : '';
-                    const selectedCls = isSelected ? 'selected' : '';
-
-                    html += `<td class="${todayCls} ${selectedCls}" onclick="selectDate('${cell.dateStr}')">`;
-                    html += `<div class="date-num">${cell.day}${isToday ? '<span class="today-tag">今</span>' : ''}</div>`;
-                    html += `<div class="schedule-badge ${cls}">${schedule}</div>`;
-                    html += '</td>';
+                    if (cyclePos === 3) displayText = '中休';
+                    else if (cyclePos === 6) displayText = '白休';
+                    else if (cyclePos === 9) displayText = '大休①';
+                    else if (cyclePos === 10) displayText = '大休②';
+                    else displayText = '休';
                 }
+                const isCurrent = v == currentValue;
+                html += `
+                    <div class="other-item" ${isCurrent ? 'style="border:2px solid #ff9500;"' : ''}>
+                        <div class="other-value-name">${v}值</div>
+                        <div class="other-schedule ${cls}">${displayText}</div>
+                    </div>
+                `;
+            }
+            grid.innerHTML = html;
+        }
+
+        // ========== 6. 渲染日历 (仅当API返回且isHoliday为true时显示红色标签) ==========
+        function renderMonthCalendar() {
+            const selectedValue = document.getElementById('scheduleValue').value;
+            const monthPicker = document.getElementById('monthPicker');
+            let [year, month] = monthPicker.value.split('-').map(Number);
+
+            const todayStr = getTodayDateStr();
+
+            // 处理选中日期
+            if (!selectedDateStr || !selectedDateStr.startsWith(`${year}-${String(month).padStart(2,'0')}`)) {
+                if (selectedDateStr) {
+                    const [oy, om, od] = selectedDateStr.split('-').map(Number);
+                    const lastDay = new Date(year, month, 0).getDate();
+                    const targetDay = Math.min(od, lastDay);
+                    selectedDateStr = `${year}-${String(month).padStart(2,'0')}-${String(targetDay).padStart(2,'0')}`;
+                } else {
+                    if (todayStr.startsWith(`${year}-${month}`)) {
+                        selectedDateStr = todayStr;
+                    } else {
+                        selectedDateStr = `${year}-${String(month).padStart(2,'0')}-01`;
+                    }
+                }
+            }
+
+            // 构建日历格子
+            const firstDay = new Date(year, month - 1, 1);
+            const lastDay = new Date(year, month, 0);
+            const daysInMonth = lastDay.getDate();
+
+            let firstWeekday = firstDay.getDay() || 7;
+            let startCol = firstWeekday - 1;
+
+            const rows = [];
+            let currentDay = 1;
+
+            for (let r = 0; r < 6; r++) {
+                const row = [];
+                for (let c = 0; c < 7; c++) {
+                    if (r === 0 && c < startCol) {
+                        row.push({ day: 0 });
+                    } else if (currentDay <= daysInMonth) {
+                        const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(currentDay).padStart(2,'0')}`;
+                        row.push({ day: currentDay, dateStr });
+                        currentDay++;
+                    } else {
+                        row.push({ day: 0 });
+                    }
+                }
+                rows.push(row);
+                if (currentDay > daysInMonth) break;
+            }
+
+            const tbody = document.getElementById('calendarBody');
+            let html = '';
+
+            rows.forEach(row => {
+                html += '<tr>';
+                row.forEach(cell => {
+                    if (cell.day === 0) {
+                        html += '<td style="background:#fafcfe;"></td>';
+                    } else {
+                        const { schedule } = getScheduleByDate(cell.dateStr, selectedValue);
+                        let cls = 'badge-rest';
+                        if (schedule === '中班') cls = 'badge-work';
+                        else if (schedule === '白班') cls = 'badge-day';
+                        else if (schedule === '零点') cls = 'badge-night';
+
+                        const isToday = cell.dateStr === todayStr;
+                        const isSelected = cell.dateStr === selectedDateStr;
+                        const todayCls = isToday ? 'today-highlight' : '';
+                        const selectedCls = isSelected ? 'selected' : '';
+
+                        // 生成额外标签：仅当API返回且为真节日时显示红色名称
+                        let extraTags = '';
+                        const holidayInfo = holidayMap[cell.dateStr];
+                        if (holidayInfo && holidayInfo.isHoliday) {
+                            const shortName = holidayInfo.name.length > 2 ? holidayInfo.name.substr(0,2) : holidayInfo.name;
+                            extraTags = `<span class="holiday-tag" title="${holidayInfo.name}">${shortName}</span>`;
+                        }
+
+                        html += `<td class="${todayCls} ${selectedCls}" onclick="selectDate('${cell.dateStr}')">`;
+                        html += `<div class="date-num">${cell.day}${isToday ? '<span class="today-tag">今</span>' : ''} ${extraTags}</div>`;
+                        html += `<div class="schedule-badge ${cls}">${schedule}</div>`;
+                        html += '</td>';
+                    }
+                });
+                html += '</tr>';
             });
-            html += '</tr>';
-        });
-        tbody.innerHTML = html;
+            tbody.innerHTML = html;
 
-        // 更新底部排班
-        updateOtherValues(selectedDateStr);
-    }
-
-    // 点击日期：高亮 + 底部更新
-    window.selectDate = function(dateStr) {
-        selectedDateStr = dateStr;
-        renderMonthCalendar();
-    };
-
-    window.goToToday = function() {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        selectedDateStr = `${year}-${month}-${day}`;
-
-        document.getElementById('monthPicker').value = `${year}-${month}`;
-        renderMonthCalendar();
-    };
-
-    window.openSettingsModal = function() {
-        const grid = document.getElementById('baseInputsGrid');
-        let html = '';
-        for (let v = 1; v <= 5; v++) {
-            const val = baseDateConfig[v].date;
-            html += `
-                <div class="base-row">
-                    <label>${v}值</label>
-                    <input type="date" id="baseDate${v}" value="${val}" data-value="${v}">
-                </div>`;
+            updateOtherValues(selectedDateStr);
         }
-        grid.innerHTML = html;
 
-        const defaultVal = localStorage.getItem('defaultScheduleValue') || '1';
-        document.getElementById('defaultValueSelect').value = defaultVal;
+        // ========== 7. 全局函数 ==========
+        window.selectDate = function(dateStr) {
+            selectedDateStr = dateStr;
+            renderMonthCalendar();
+        };
 
-        document.getElementById('settingsModal').style.display = 'flex';
-    };
+        window.goToToday = function() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            selectedDateStr = `${year}-${month}-${day}`;
+            document.getElementById('monthPicker').value = `${year}-${month}`;
+            renderMonthCalendar();
+            loadHolidaysForCurrentMonth(); // 切换月份重新加载
+        };
 
-    window.closeSettingsModal = function() {
-        document.getElementById('settingsModal').style.display = 'none';
-    };
-
-    window.saveAllBaseDates = function() {
-        const v1 = document.getElementById('baseDate1').value;
-        baseDateConfig = generateFullConfigFromBase1Zero(v1);
-        saveFullConfigToStorage(baseDateConfig);
-
-        const defaultVal = document.getElementById('defaultValueSelect').value;
-        localStorage.setItem('defaultScheduleValue', defaultVal);
-        document.getElementById('scheduleValue').value = defaultVal;
-
-        closeSettingsModal();
-        renderMonthCalendar();
-    };
-
-    // 初始化
-    window.onload = function() {
-        const savedDefault = localStorage.getItem('defaultScheduleValue');
-        if (savedDefault) {
-            document.getElementById('scheduleValue').value = savedDefault;
-        }
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        selectedDateStr = `${year}-${month}-${day}`;
-        document.getElementById('monthPicker').value = `${year}-${month}`;
-
-        renderMonthCalendar();
-
-        document.getElementById('scheduleValue').addEventListener('change', renderMonthCalendar);
-        document.getElementById('monthPicker').addEventListener('change', renderMonthCalendar);
-    };
-
-    // 左右滑动切换月份 (手机手势)
-    const wrapper = document.querySelector('.calendar-wrapper');
-    if (wrapper) {
-        let touchStartX = 0, touchStartY = 0;
-        let swiping = false;
-        const SWIPE_THRESHOLD = 30;
-        const MOVE_THRESHOLD = 10;
-
-        wrapper.addEventListener('touchstart', function(e) {
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-            swiping = false;
-        }, { passive: true });
-
-        wrapper.addEventListener('touchmove', function(e) {
-            if (touchStartX === undefined) return;
-            const currentX = e.touches[0].clientX;
-            const currentY = e.touches[0].clientY;
-            const deltaX = currentX - touchStartX;
-            const deltaY = currentY - touchStartY;
-            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > MOVE_THRESHOLD) {
-                e.preventDefault();
-                swiping = true;
+        window.openSettingsModal = function() {
+            const grid = document.getElementById('baseInputsGrid');
+            let html = '';
+            for (let v = 1; v <= 5; v++) {
+                const val = baseDateConfig[v].date;
+                html += `
+                    <div class="base-row">
+                        <label>${v}值</label>
+                        <input type="date" id="baseDate${v}" value="${val}" data-value="${v}">
+                    </div>`;
             }
-        }, { passive: false });
+            grid.innerHTML = html;
+            document.getElementById('defaultValueSelect').value = localStorage.getItem('defaultScheduleValue') || '1';
+            document.getElementById('settingsModal').style.display = 'flex';
+        };
 
-        wrapper.addEventListener('touchend', function(e) {
-            if (touchStartX === undefined) return;
-            const deltaX = e.changedTouches[0].clientX - touchStartX;
-            const deltaY = e.changedTouches[0].clientY - touchStartY;
-            if (swiping && Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(deltaY)) {
-                const monthPicker = document.getElementById('monthPicker');
-                let [year, month] = monthPicker.value.split('-').map(Number);
-                if (deltaX < 0) { // 左滑 下一月
-                    month += 1;
-                    if (month > 12) { month = 1; year += 1; }
-                } else {           // 右滑 上一月
-                    month -= 1;
-                    if (month < 1) { month = 12; year -= 1; }
-                }
-                monthPicker.value = `${year}-${String(month).padStart(2, '0')}`;
+        window.closeSettingsModal = function() {
+            document.getElementById('settingsModal').style.display = 'none';
+        };
+
+        window.saveAllBaseDates = function() {
+            const v1 = document.getElementById('baseDate1').value;
+            baseDateConfig = generateFullConfigFromBase1Zero(v1);
+            saveFullConfigToStorage(baseDateConfig);
+            localStorage.setItem('defaultScheduleValue', document.getElementById('defaultValueSelect').value);
+            document.getElementById('scheduleValue').value = localStorage.getItem('defaultScheduleValue');
+            closeSettingsModal();
+            renderMonthCalendar();
+        };
+
+        // ========== 8. 初始化 ==========
+        window.onload = function() {
+            const savedDefault = localStorage.getItem('defaultScheduleValue');
+            if (savedDefault) {
+                document.getElementById('scheduleValue').value = savedDefault;
+            }
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            selectedDateStr = `${year}-${month}-${day}`;
+            document.getElementById('monthPicker').value = `${year}-${month}`;
+
+            renderMonthCalendar();
+            loadHolidaysForCurrentMonth();
+
+            document.getElementById('scheduleValue').addEventListener('change', renderMonthCalendar);
+            document.getElementById('monthPicker').addEventListener('change', function() {
                 renderMonthCalendar();
-            }
-            touchStartX = undefined;
-            swiping = false;
-        }, { passive: true });
+                loadHolidaysForCurrentMonth();
+            });
+        };
 
-        wrapper.addEventListener('touchcancel', function() {
-            touchStartX = undefined;
-            swiping = false;
-        }, { passive: true });
-    }
-
-})();
+        // ========== 9. 滑动切换月份 (手势，与原逻辑相同) ==========
+        const wrapper = document.querySelector('.calendar-wrapper');
+        if (wrapper) {
+            let touchStartX = 0, touchStartY = 0, swiping = false;
+            const SWIPE_THRESHOLD = 30, MOVE_THRESHOLD = 10;
+            wrapper.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; swiping = false; }, { passive: true });
+            wrapper.addEventListener('touchmove', e => {
+                if (touchStartX === undefined) return;
+                const deltaX = e.touches[0].clientX - touchStartX, deltaY = e.touches[0].clientY - touchStartY;
+                if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > MOVE_THRESHOLD) { e.preventDefault(); swiping = true; }
+            }, { passive: false });
+            wrapper.addEventListener('touchend', e => {
+                if (touchStartX === undefined) return;
+                const deltaX = e.changedTouches[0].clientX - touchStartX, deltaY = e.changedTouches[0].clientY - touchStartY;
+                if (swiping && Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(deltaY)) {
+                    const monthPicker = document.getElementById('monthPicker');
+                    let [year, month] = monthPicker.value.split('-').map(Number);
+                    if (deltaX < 0) { month++; if (month>12) { month=1; year++; } }
+                    else { month--; if (month<1) { month=12; year--; } }
+                    monthPicker.value = `${year}-${String(month).padStart(2,'0')}`;
+                    renderMonthCalendar();
+                    loadHolidaysForCurrentMonth();
+                }
+                touchStartX = undefined; swiping = false;
+            }, { passive: true });
+            wrapper.addEventListener('touchcancel', () => { touchStartX = undefined; swiping = false; }, { passive: true });
+        }
+    })();
 </script>
 </body>
 </html>
