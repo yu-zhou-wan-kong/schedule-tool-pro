@@ -1,7 +1,0 @@
-com.example.myapplication.app-pngs-0 D:\AndroidProjects\MyApplication\app\build\generated\res\pngs\release
-com.example.myapplication.app-updated_navigation_xml-1 D:\AndroidProjects\MyApplication\app\build\generated\updated_navigation_xml\release
-com.example.myapplication.app-packageReleaseResources-2 D:\AndroidProjects\MyApplication\app\build\intermediates\incremental\release\packageReleaseResources\merged.dir
-com.example.myapplication.app-packageReleaseResources-3 D:\AndroidProjects\MyApplication\app\build\intermediates\incremental\release\packageReleaseResources\stripped.dir
-com.example.myapplication.app-release-4 D:\AndroidProjects\MyApplication\app\build\intermediates\merged_res\release\mergeReleaseResources
-com.example.myapplication.app-main-5 D:\AndroidProjects\MyApplication\app\src\main\res
-com.example.myapplication.app-release-6 D:\AndroidProjects\MyApplication\app\src\release\res
