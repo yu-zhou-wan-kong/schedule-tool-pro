@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 未选中时的文字样式 -->
+    <style name="BottomNavTextInactive">
+        <item name="android:textSize">70sp</item>   <!-- 调大后的字体大小，可修改 -->
+        <item name="android:textColor">@color/bottom_nav_text_color</item> <!-- 引用之前定义的颜色选择器 -->引用之前定义的颜色选择器
+    </style>
+
+    <!-- 选中时的文字样式 -->
+    <style name="BottomNavTextActive">
+        <item name="android:textSize">90sp</item>   <!-- 可以比未选中稍大，也可以相同 -->
+        <item name="android:textColor">@color/bottom_nav_text_color</item>
+    </style>
+
+</resources>

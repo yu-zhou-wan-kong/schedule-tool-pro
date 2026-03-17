@@ -2,4 +2,7 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="nav_bg">#F5F5F5</color>          <!-- 导航栏背景灰色 -->
+    <color name="nav_text_default">#000000</color> <!-- 未选中文字黑色 -->
+    <color name="nav_selected_bg">#E0E0E0</color>  <!-- 选中时的浅色背景 -->
 </resources>

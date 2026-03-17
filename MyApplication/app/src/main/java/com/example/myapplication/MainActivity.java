@@ -1,65 +1,69 @@
 package com.example.myapplication;
 
-import android.os.Build;
 import android.os.Bundle;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
-import android.content.Intent;
-import android.widget.Button;
-import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
-    private WebView webView;
+
+    private FragmentManager fragmentManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // 设置 Toolbar 作为 ActionBar（可选）
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        // 初始化底部导航栏
+        BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
+        fragmentManager = getSupportFragmentManager();
 
-// 找到关于按钮并设置点击监听
-        Button btnAbout = findViewById(R.id.btnAbout);
-        btnAbout.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, AboutActivity.class);
-            startActivity(intent);
-        });
-
-        webView = findViewById(R.id.webview);
-        WebSettings webSettings = webView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        webSettings.setDomStorageEnabled(true);
-        // ... 其他设置 ...
-        // 3. 允许从 file:// 加载的页面访问跨域资源（关键！）
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            webSettings.setAllowUniversalAccessFromFileURLs(true);
-            webSettings.setAllowFileAccessFromFileURLs(true);
+        // 首次进入，默认显示 HomeFragment
+        if (savedInstanceState == null) {
+            fragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, new HomeFragment())
+                    .commit();
         }
 
-        // 4. 允许访问文件（因为页面在 assets 中）
-        webSettings.setAllowFileAccess(true);
+        // 设置底部导航点击监听
+        bottomNav.setOnItemSelectedListener(item -> {
+            Fragment selectedFragment = null;
+            int itemId = item.getItemId();
 
-        // 5. 允许内容 URL 访问（可选）
-        webSettings.setAllowContentAccess(true);
+            if (itemId == R.id.navigation_home) {
+                selectedFragment = new HomeFragment();
+            } else if (itemId == R.id.navigation_about) {
+                selectedFragment = new AboutFragment();
+            }
 
+            if (selectedFragment != null) {
+                // 每次替换 Fragment，简单实现，不保存状态
+                fragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, selectedFragment)
+                        .commit();
+                return true;
+            }
+            return false;
+        });
 
-        webView.setWebViewClient(new WebViewClient());
-        webView.loadUrl("file:///android_asset/index.html");
-
-        // 返回键处理（兼容手势导航）
+        // 处理返回键
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (webView.canGoBack()) {
-                    webView.goBack();
-                } else {
-                    finish();
+                // 获取当前显示的 Fragment
+                Fragment currentFragment = fragmentManager.findFragmentById(R.id.fragment_container);
+                if (currentFragment instanceof HomeFragment) {
+                    HomeFragment homeFragment = (HomeFragment) currentFragment;
+                    // 如果 WebView 可以回退，就让 WebView 回退
+                    if (homeFragment.canGoBack()) {
+                        homeFragment.goBack();
+                        return;
+                    }
                 }
+                // 否则执行默认的返回行为（退出应用）
+                finish();
             }
         });
     }

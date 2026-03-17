@@ -5,33 +5,23 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <!-- 标题栏 -->
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
+    <!-- 用于显示 Fragment 的容器 -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragment_container"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="#ffffff"
-        app:title="排班日历"
-        app:titleTextColor="#1f2d3d">
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
-        <Button
-            android:id="@+id/btnAbout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="关于"
-            android:backgroundTint="#b8ccdd"
-            android:textColor="#2c5779"
-            android:layout_gravity="end"
-            android:gravity="center"
-            android:paddingLeft="12dp"
-            android:paddingRight="12dp"
-            android:minWidth="0dp"
-            style="@style/Widget.AppCompat.Button.Borderless" />
-    </androidx.appcompat.widget.Toolbar>
-
-    <!-- WebView 占满剩余空间 -->
-    <WebView
-        android:id="@+id/webview"
+    <!-- 底部导航栏 -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content"
+        android:background="#F5F5F5"
+        app:menu="@menu/bottom_nav_menu"
+        app:labelVisibilityMode="labeled"
+        app:itemTextColor="@color/bottom_nav_text_color"
+        app:itemIconTint="@color/bottom_nav_text_color"
+        app:elevation="8dp" />
+
 </LinearLayout>

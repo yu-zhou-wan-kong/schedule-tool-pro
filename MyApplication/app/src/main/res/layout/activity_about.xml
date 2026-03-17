@@ -4,9 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
     android:background="@android:color/white">
 
+    <!-- 顶部 Toolbar（保留，如果你希望去掉也可以） -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -17,70 +17,83 @@
         app:navigationIcon="?attr/homeAsUpIndicator"
         app:navigationIconTint="#1f2d3d" />
 
+    <!-- 可滚动区域，fillViewport 允许内容扩展 -->
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
         android:paddingTop="16dp">
 
+        <!-- 外层容器，用于将卡片居中 -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@android:color/white"
-            android:padding="20dp"
-            android:elevation="2dp">
+            android:gravity="center">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- 卡片内容，宽度匹配父布局，但通过 maxWidth 限制最大宽度，实现居中 -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/about_app_name"
-                android:textSize="20sp"
-                android:textColor="#1f2d3d"
-                android:textStyle="bold"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="16dp"/>
+                android:maxWidth="450dp"
+                android:background="@drawable/card_bg"
+                android:padding="20dp"
+                android:elevation="2dp"
+                android:orientation="vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/version_text"
-                android:textSize="16sp"
-                android:textColor="#1f2d3d"
-                android:layout_marginBottom="8dp"/>
+                <!-- 原有所有 TextView 保持不变 -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/about_app_name"
+                    android:textSize="20sp"
+                    android:textColor="#1f2d3d"
+                    android:textStyle="bold"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="16dp"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/author_text"
-                android:textSize="16sp"
-                android:textColor="#1f2d3d"
-                android:layout_marginBottom="8dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/version_text"
+                    android:textSize="16sp"
+                    android:textColor="#1f2d3d"
+                    android:layout_marginBottom="8dp"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/contact_text"
-                android:textSize="16sp"
-                android:textColor="#1f2d3d"
-                android:layout_marginBottom="8dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/author_text"
+                    android:textSize="16sp"
+                    android:textColor="#1f2d3d"
+                    android:layout_marginBottom="8dp"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/description_text"
-                android:textSize="14sp"
-                android:layout_marginTop="16dp"
-                android:textColor="#1f2d3d"
-                android:lineSpacingExtra="4dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/contact_text"
+                    android:textSize="16sp"
+                    android:textColor="#1f2d3d"
+                    android:layout_marginBottom="8dp"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/source_text"
-                android:textSize="14sp"
-                android:textColor="#1f2d3d"
-                android:layout_marginTop="8dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/description_text"
+                    android:textSize="14sp"
+                    android:layout_marginTop="16dp"
+                    android:textColor="#1f2d3d"
+                    android:lineSpacingExtra="4dp"/>
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/source_text"
+                    android:textSize="14sp"
+                    android:textColor="#1f2d3d"
+                    android:layout_marginTop="8dp"/>
+            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
