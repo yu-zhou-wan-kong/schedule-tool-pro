@@ -24,26 +24,28 @@ import android.content.Intent;
 import android.content.Context;
 import androidx.core.content.ContextCompat;
 import android.widget.Toast;
-import android.os.Build;                    // 用于 Build.VERSION.SDK_INT
-import java.io.File;                         // 用于 File 类
-import androidx.core.content.FileProvider;    // 用于 FileProvider
+import android.os.Build;
+import java.io.File;
+import androidx.core.content.FileProvider;
 import android.provider.Settings;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import android.os.Handler;
 
 public class MainActivity extends AppCompatActivity {
 
     private FragmentManager fragmentManager;
+    private Handler mHandler = new Handler();
+    private Runnable mDownloadCheckRunnable;
+    private long mDownloadId = -1;
 
     private void checkUpdate() {
         // 网络请求在子线程执行
         new Thread(() -> {
             HttpURLConnection conn = null;
             try {
-                // 基础 URL（你的 update.json 地址）
                 String baseUrl = "https://gitee.com/yu-zhe-zhang/app-update/raw/master/update.json";
-                // 添加时间戳参数，彻底避免 CDN 或服务器缓存
                 long timestamp = System.currentTimeMillis();
                 URL url = new URL(baseUrl + "?t=" + timestamp);
 
@@ -55,7 +57,6 @@ public class MainActivity extends AppCompatActivity {
                 int responseCode = conn.getResponseCode();
                 Log.d("Update", "服务器响应码: " + responseCode);
                 if (responseCode == 200) {
-                    // 读取响应内容
                     InputStream is = conn.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(is));
                     StringBuilder response = new StringBuilder();
@@ -66,7 +67,6 @@ public class MainActivity extends AppCompatActivity {
                     reader.close();
                     is.close();
 
-                    // 解析 JSON
                     JSONObject json = new JSONObject(response.toString());
                     int latestVersionCode = json.getInt("versionCode");
                     String latestVersionName = json.getString("versionName");
@@ -74,15 +74,12 @@ public class MainActivity extends AppCompatActivity {
                     String downloadUrl = json.getString("downloadUrl");
                     boolean isForce = json.getBoolean("isForce");
 
-                    // 获取当前版本号
                     int currentVersionCode = getPackageManager()
                             .getPackageInfo(getPackageName(), 0).versionCode;
 
                     Log.d("Update", "本地版本: " + currentVersionCode + ", 服务器版本: " + latestVersionCode);
 
-                    // 比较版本
                     if (latestVersionCode > currentVersionCode) {
-                        // 切换到主线程显示更新对话框，传入最新版本号用于“忽略”功能
                         int finalLatestVersionCode = latestVersionCode;
                         runOnUiThread(() -> showUpdateDialog(downloadUrl, updateContent, isForce, finalLatestVersionCode));
                     }
@@ -100,7 +97,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showUpdateDialog(String downloadUrl, String content, boolean isForce, int latestVersionCode) {
-        // 检查是否已忽略此版本
         int ignoredVersion = getSharedPreferences("update", MODE_PRIVATE).getInt("ignored_version", 0);
         if (latestVersionCode == ignoredVersion) {
             Log.d("Update", "用户已忽略版本 " + latestVersionCode + "，不弹窗");
@@ -114,29 +110,24 @@ public class MainActivity extends AppCompatActivity {
                 .setCancelable(!isForce);
 
         if (!isForce) {
-            // 非强制更新时，提供“稍后”和“忽略此版本”按钮
             builder.setNegativeButton("稍后", null);
             builder.setNeutralButton("忽略此版本", (dialog, which) -> {
-                // 将当前服务器版本号存入 SharedPreferences，以后不再提醒
                 getSharedPreferences("update", MODE_PRIVATE).edit()
                         .putInt("ignored_version", latestVersionCode).apply();
                 Log.d("Update", "用户忽略版本 " + latestVersionCode);
                 Toast.makeText(this, "已忽略此版本，有新版本时会再次提醒", Toast.LENGTH_SHORT).show();
             });
         } else {
-            // 强制更新时，只显示“立即更新”，且不可取消
-            builder.setNegativeButton(null, null); // 移除“稍后”按钮
-            // 阻止用户通过返回键关闭对话框
+            builder.setNegativeButton(null, null);
             setFinishOnTouchOutside(false);
         }
 
         AlertDialog dialog = builder.create();
-        dialog.setCanceledOnTouchOutside(!isForce); // 非强制可点击外部关闭
+        dialog.setCanceledOnTouchOutside(!isForce);
         dialog.show();
     }
 
     private void startDownload(String downloadUrl) {
-        // 删除旧文件（可选）
         File oldFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "app_update.apk");
         if (oldFile.exists()) {
             oldFile.delete();
@@ -146,100 +137,89 @@ public class MainActivity extends AppCompatActivity {
         request.setTitle("应用更新");
         request.setDescription("正在下载新版本...");
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-
-        // 关键：明确设置 MIME 类型为 APK
         request.setMimeType("application/vnd.android.package-archive");
-
-        // 设置文件名
         request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "app_update.apk");
 
         DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-        long downloadId = dm.enqueue(request);
-        getSharedPreferences("update", MODE_PRIVATE).edit().putLong("downloadId", downloadId).apply();
+        mDownloadId = dm.enqueue(request);
+        Log.d("Update", "【startDownload】新任务 ID = " + mDownloadId);
+        getSharedPreferences("update", MODE_PRIVATE).edit().putLong("downloadId", mDownloadId).apply();
 
-        IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
-        ContextCompat.registerReceiver(this, downloadCompleteReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED);
+        // 启动轮询检查下载状态
+        startPollingDownloadStatus();
     }
 
-    private BroadcastReceiver downloadCompleteReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            long downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-            long savedId = getSharedPreferences("update", MODE_PRIVATE).getLong("downloadId", -1);
-
-            if (downloadId == savedId) {
+    private void startPollingDownloadStatus() {
+        mDownloadCheckRunnable = new Runnable() {
+            @Override
+            public void run() {
                 DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
                 DownloadManager.Query query = new DownloadManager.Query();
-                query.setFilterById(downloadId);
+                query.setFilterById(mDownloadId);
                 Cursor cursor = dm.query(query);
 
                 if (cursor != null && cursor.moveToFirst()) {
                     int statusIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
                     int uriIndex = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI);
+                    int reasonIndex = cursor.getColumnIndex(DownloadManager.COLUMN_REASON);
 
-                    if (statusIndex >= 0 && cursor.getInt(statusIndex) == DownloadManager.STATUS_SUCCESSFUL) {
-                        if (uriIndex >= 0) {
-                            String fileUriString = cursor.getString(uriIndex);
-                            Uri fileUri = Uri.parse(fileUriString);
-                            File file = new File(fileUri.getPath());
+                    if (statusIndex >= 0) {
+                        int status = cursor.getInt(statusIndex);
+                        Log.d("Update", "轮询下载状态: " + status);
 
-                            // 检查文件名是否以 .txt 结尾，若是则重命名
-                            if (file.getName().toLowerCase().endsWith(".txt")) {
-                                String newName = file.getName().substring(0, file.getName().length() - 4); // 去掉 .txt
-                                File newFile = new File(file.getParent(), newName);
-                                // 如果目标文件已存在，先删除
-                                if (newFile.exists()) {
-                                    newFile.delete();
+                        if (status == DownloadManager.STATUS_SUCCESSFUL) {
+                            Log.d("Update", "轮询检测到下载成功");
+                            if (uriIndex >= 0) {
+                                String fileUriString = cursor.getString(uriIndex);
+                                Uri fileUri = Uri.parse(fileUriString);
+                                File file = new File(fileUri.getPath());
+
+                                // 处理文件名（如果被加了.txt后缀）
+                                if (file.getName().toLowerCase().endsWith(".txt")) {
+                                    String newName = file.getName().substring(0, file.getName().length() - 4);
+                                    File newFile = new File(file.getParent(), newName);
+                                    if (file.renameTo(newFile)) {
+                                        Log.d("Update", "重命名为: " + newFile.getName());
+                                        file = newFile;
+                                        fileUri = Uri.fromFile(file);
+                                    } else {
+                                        Log.e("Update", "重命名失败，尝试使用原文件安装");
+                                    }
                                 }
-                                if (file.renameTo(newFile)) {
-                                    Log.d("Update", "重命名为: " + newFile.getName());
-                                    file = newFile;
-                                    fileUri = Uri.fromFile(file);
-                                } else {
-                                    Log.e("Update", "重命名失败，尝试使用原文件安装");
-                                }
+
+                                installApk(fileUri);
+                            } else {
+                                Log.e("Update", "无法获取下载文件URI");
                             }
-
-                            // 调用安装
-                            installApk(fileUri);
+                            cursor.close();
+                            return; // 停止轮询
+                        } else if (status == DownloadManager.STATUS_FAILED) {
+                            int reason = (reasonIndex >= 0) ? cursor.getInt(reasonIndex) : -1;
+                            Log.e("Update", "下载失败，原因码: " + reason);
+                            Toast.makeText(MainActivity.this, "下载失败，请稍后重试", Toast.LENGTH_SHORT).show();
+                            cursor.close();
+                            return;
                         }
                     }
                     cursor.close();
+                } else {
+                    Log.e("Update", "无法查询下载任务，可能已失效");
+                    return;
                 }
-                unregisterReceiver(this);
-            }
-        }
-    };
 
-    private boolean copyFile(File src, File dst) {
-        FileInputStream in = null;
-        FileOutputStream out = null;
-        try {
-            in = new FileInputStream(src);
-            out = new FileOutputStream(dst);
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len = in.read(buffer)) > 0) {
-                out.write(buffer, 0, len);
+                // 未完成，1秒后再次检查
+                mHandler.postDelayed(this, 1000);
             }
-            return true;
-        } catch (Exception e) {
-            Log.e("Update", "复制文件异常", e);
-            return false;
-        } finally {
-            try {
-                if (in != null) in.close();
-                if (out != null) out.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        };
+
+        mHandler.post(mDownloadCheckRunnable);
     }
 
     private void installApk(Uri uri) {
+        Log.d("Update", "installApk 被调用，URI: " + uri.toString());
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (!getPackageManager().canRequestPackageInstalls()) {
-                // 引导用户开启权限
                 Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + getPackageName()));
                 startActivity(intent);
                 Toast.makeText(this, "请允许安装未知应用后重试", Toast.LENGTH_LONG).show();
@@ -248,15 +228,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            // Android 7.0+ 需要使用 FileProvider 生成 content:// URI
-            File file = new File(uri.getPath());  // uri 可能是 file:///storage/... 格式
+            File file = new File(uri.getPath());
             Uri apkUri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", file);
+            Log.d("Update", "FileProvider 生成 URI: " + apkUri.toString());
             Intent install = new Intent(Intent.ACTION_VIEW);
             install.setDataAndType(apkUri, "application/vnd.android.package-archive");
             install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             startActivity(install);
         } else {
-            // Android 6.0 及以下直接使用 file:// URI
             Intent install = new Intent(Intent.ACTION_VIEW);
             install.setDataAndType(uri, "application/vnd.android.package-archive");
             install.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -269,18 +248,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // 初始化底部导航栏
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
         fragmentManager = getSupportFragmentManager();
 
-        // 首次进入，默认显示 HomeFragment
         if (savedInstanceState == null) {
             fragmentManager.beginTransaction()
                     .replace(R.id.fragment_container, new HomeFragment())
                     .commit();
         }
 
-        // 设置底部导航点击监听
         bottomNav.setOnItemSelectedListener(item -> {
             Fragment selectedFragment = null;
             int itemId = item.getItemId();
@@ -292,7 +268,6 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (selectedFragment != null) {
-                // 每次替换 Fragment，简单实现，不保存状态
                 fragmentManager.beginTransaction()
                         .replace(R.id.fragment_container, selectedFragment)
                         .commit();
@@ -301,26 +276,29 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
 
-        // 处理返回键
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                // 获取当前显示的 Fragment
                 Fragment currentFragment = fragmentManager.findFragmentById(R.id.fragment_container);
                 if (currentFragment instanceof HomeFragment) {
                     HomeFragment homeFragment = (HomeFragment) currentFragment;
-                    // 如果 WebView 可以回退，就让 WebView 回退
                     if (homeFragment.canGoBack()) {
                         homeFragment.goBack();
                         return;
                     }
                 }
-                // 否则执行默认的返回行为（退出应用）
                 finish();
             }
         });
 
         checkUpdate();
+    }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mHandler != null && mDownloadCheckRunnable != null) {
+            mHandler.removeCallbacks(mDownloadCheckRunnable);
+        }
     }
 }

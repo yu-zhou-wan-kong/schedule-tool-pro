@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
+    <!-- 用于 DownloadManager 下载的文件（位于外部存储的 Download 目录） -->
+    <external-path name="download" path="Download/" />
+    <!-- 如果你需要访问整个外部存储，可以添加以下行（但通常不需要） -->
     <external-path name="external" path="." />
-    <external-files-path name="external_files" path="." />
-    <cache-path name="cache" path="." />
 </paths>
