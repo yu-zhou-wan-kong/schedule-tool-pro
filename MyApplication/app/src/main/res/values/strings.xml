@@ -1,9 +1,0 @@
-<resources>
-    <string name="app_name">大休排班</string>
-    <string name="about_title">关于</string>
-    <string name="about_app_name">大休排班 · 运行值助手</string>
-    <string name="author_text">作者：宇宙万空</string>
-    <string name="contact_text">项目地址：https://github.com/yu-zhou-wan-kong/schedule-tool-pro</string>
-    <string name="description_text">📅 基于五班三倒排班规则，支持节假日显示。</string>
-    <string name="source_text">节假日数据来源：timor.tech 节假日 API</string>
-</resources>
