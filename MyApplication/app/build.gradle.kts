@@ -14,8 +14,8 @@ android {
         applicationId = "com.example.myapplication"
         minSdk = 24
         targetSdk = 36
-        versionCode = 8
-        versionName = "1.2.1"
+        versionCode = 9
+        versionName = "1.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -47,4 +47,5 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.9.0")
+    implementation("androidx.core:core:1.9.0")
 }
