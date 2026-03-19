@@ -41,17 +41,21 @@ public class MainActivity extends AppCompatActivity {
         new Thread(() -> {
             HttpURLConnection conn = null;
             try {
-                // 1. 请求 update.json
-                URL url = new URL("https://gitee.com/yu-zhe-zhang/app-update/raw/master/update.json");
+                // 基础 URL（你的 update.json 地址）
+                String baseUrl = "https://gitee.com/yu-zhe-zhang/app-update/raw/master/update.json";
+                // 添加时间戳参数，彻底避免 CDN 或服务器缓存
+                long timestamp = System.currentTimeMillis();
+                URL url = new URL(baseUrl + "?t=" + timestamp);
+
                 conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
                 conn.setConnectTimeout(8000);
                 conn.setReadTimeout(8000);
 
                 int responseCode = conn.getResponseCode();
-                Log.d("Update", "服务器响应码: " + responseCode); // 调试日志
+                Log.d("Update", "服务器响应码: " + responseCode);
                 if (responseCode == 200) {
-                    // 2. 读取响应内容
+                    // 读取响应内容
                     InputStream is = conn.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(is));
                     StringBuilder response = new StringBuilder();
@@ -62,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
                     reader.close();
                     is.close();
 
-                    // 3. 解析 JSON
+                    // 解析 JSON
                     JSONObject json = new JSONObject(response.toString());
                     int latestVersionCode = json.getInt("versionCode");
                     String latestVersionName = json.getString("versionName");
@@ -70,14 +74,17 @@ public class MainActivity extends AppCompatActivity {
                     String downloadUrl = json.getString("downloadUrl");
                     boolean isForce = json.getBoolean("isForce");
 
-                    // 4. 获取当前版本号
+                    // 获取当前版本号
                     int currentVersionCode = getPackageManager()
                             .getPackageInfo(getPackageName(), 0).versionCode;
 
-                    // 5. 比较版本
+                    Log.d("Update", "本地版本: " + currentVersionCode + ", 服务器版本: " + latestVersionCode);
+
+                    // 比较版本
                     if (latestVersionCode > currentVersionCode) {
-                        // 切换到主线程显示更新对话框
-                        runOnUiThread(() -> showUpdateDialog(downloadUrl, updateContent, isForce));
+                        // 切换到主线程显示更新对话框，传入最新版本号用于“忽略”功能
+                        int finalLatestVersionCode = latestVersionCode;
+                        runOnUiThread(() -> showUpdateDialog(downloadUrl, updateContent, isForce, finalLatestVersionCode));
                     }
                 } else {
                     Log.e("Update", "服务器返回错误码: " + responseCode);
@@ -92,22 +99,39 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
-    private void showUpdateDialog(String downloadUrl, String content, boolean isForce) {
+    private void showUpdateDialog(String downloadUrl, String content, boolean isForce, int latestVersionCode) {
+        // 检查是否已忽略此版本
+        int ignoredVersion = getSharedPreferences("update", MODE_PRIVATE).getInt("ignored_version", 0);
+        if (latestVersionCode == ignoredVersion) {
+            Log.d("Update", "用户已忽略版本 " + latestVersionCode + "，不弹窗");
+            return;
+        }
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("发现新版本")
                 .setMessage(content)
                 .setPositiveButton("立即更新", (dialog, which) -> startDownload(downloadUrl))
-                .setCancelable(!isForce);  // 非强制更新时可以取消
+                .setCancelable(!isForce);
 
         if (!isForce) {
+            // 非强制更新时，提供“稍后”和“忽略此版本”按钮
             builder.setNegativeButton("稍后", null);
+            builder.setNeutralButton("忽略此版本", (dialog, which) -> {
+                // 将当前服务器版本号存入 SharedPreferences，以后不再提醒
+                getSharedPreferences("update", MODE_PRIVATE).edit()
+                        .putInt("ignored_version", latestVersionCode).apply();
+                Log.d("Update", "用户忽略版本 " + latestVersionCode);
+                Toast.makeText(this, "已忽略此版本，有新版本时会再次提醒", Toast.LENGTH_SHORT).show();
+            });
         } else {
-            // 强制更新时，点击返回键无效
+            // 强制更新时，只显示“立即更新”，且不可取消
+            builder.setNegativeButton(null, null); // 移除“稍后”按钮
+            // 阻止用户通过返回键关闭对话框
             setFinishOnTouchOutside(false);
         }
 
         AlertDialog dialog = builder.create();
-        dialog.setCanceledOnTouchOutside(!isForce);  // 非强制更新时点击外部可取消
+        dialog.setCanceledOnTouchOutside(!isForce); // 非强制可点击外部关闭
         dialog.show();
     }
 
