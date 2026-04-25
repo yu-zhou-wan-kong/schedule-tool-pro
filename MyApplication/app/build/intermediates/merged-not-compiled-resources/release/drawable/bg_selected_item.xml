@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#E0E0E0" /> <!-- 浅灰色背景 -->
+    <corners android:radius="20dp" /> <!-- 圆角，可根据喜好调整 -->
+    <!-- 如果需要背景有内边距，可以在这里加 padding，但 shape 的 padding 可能影响文字位置，建议通过 item 的 padding 控制 -->
+</shape>
