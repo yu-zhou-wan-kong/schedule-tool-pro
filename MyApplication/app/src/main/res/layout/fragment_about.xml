@@ -32,6 +32,24 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginBottom="16dp"/>
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="关于应用"
+                android:textSize="16sp"
+                android:textColor="#1f2d3d"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/about_app_intro"
+                android:textSize="16sp"
+                android:textColor="#1f2d3d"
+                android:lineSpacingExtra="4dp"
+                android:layout_marginBottom="16dp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -47,7 +65,8 @@
                 android:text="@string/contact_text"
                 android:textSize="16sp"
                 android:textColor="#1f2d3d"
-                android:layout_marginBottom="8dp"/>
+                android:layout_marginBottom="8dp"
+                android:textIsSelectable="true"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -57,14 +76,6 @@
                 android:layout_marginTop="16dp"
                 android:textColor="#1f2d3d"
                 android:lineSpacingExtra="4dp"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/source_text"
-                android:textSize="14sp"
-                android:textColor="#1f2d3d"
-                android:layout_marginTop="8dp"/>
 
         </LinearLayout>
     </LinearLayout>

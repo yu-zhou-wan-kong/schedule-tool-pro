@@ -6,4 +6,7 @@
     <string name="contact_text">项目地址：https://github.com/yu-zhou-wan-kong/schedule-tool-pro</string>
     <string name="description_text">📅 基于五班三倒排班规则，支持节假日显示。</string>
     <string name="source_text">节假日数据来源：timor.tech 节假日 API</string>
+    <string name="about_app_intro">这是一款专为五班三倒工作制设计的排班日历应用。
+        依赖个人维护，每年更新节假日数据。
+        主要是想做一个简单、没有广告的排班表应用。后续也许会更新更多功能。</string>
 </resources>
