@@ -32,6 +32,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import android.os.Handler;
+import android.os.Looper;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -188,6 +189,23 @@ public class MainActivity extends AppCompatActivity {
                                 }
 
                                 installApk(fileUri);
+
+                                // ★ 新增：延时自动删除安装包
+                                final Uri finalInstallUri = fileUri;
+                                mHandler.postDelayed(() -> {
+                                    try {
+                                        File apkFile = new File(finalInstallUri.getPath());
+                                        if (apkFile.exists()) {
+                                            boolean deleted = apkFile.delete();
+                                            Log.d("Update", "删除安装包 " + (deleted ? "成功" : "失败"));
+                                        }
+                                    } catch (Exception e) {
+                                        Log.e("Update", "删除安装包异常", e);
+                                    }
+                                }, 10000); // 10秒后删除
+
+                                cursor.close();
+                                return;
                             } else {
                                 Log.e("Update", "无法获取下载文件URI");
                             }
