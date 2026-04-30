@@ -54,16 +54,26 @@
             white-space: nowrap;
         }
         .today-btn {
-            background: #fff;
-            border: 1.5px solid #ff9500;
-            color: #ff9500;
-            font-weight: 500;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            min-height: 30px;
-            margin-right: 4px;
+            background: linear-gradient(135deg, #ff9500, #ff6b00);
+            color: #fff;
+            border: none;
+            font-weight: 600;
+            padding: 8px 40px;
+            border-radius: 30px;
+            font-size: 16px;
+            min-width: 200px;
             cursor: pointer;
+            box-shadow: 0 4px 14px rgba(255, 149, 0, 0.3);
+            transition: all 0.2s ease;
+        }
+        .today-btn:hover {
+            background: linear-gradient(135deg, #ff7b00, #e05e00);
+            box-shadow: 0 6px 18px rgba(255, 149, 0, 0.45);
+            transform: translateY(-1px);
+        }
+        .today-btn:active {
+            transform: scale(0.97);
+            box-shadow: 0 2px 6px rgba(255, 149, 0, 0.3);
         }
         .settings-btn {
             background: #fff;
@@ -417,7 +427,6 @@
         <div class="header">
             <h1>🗓️ 排班日历</h1>
             <div>
-                <button class="today-btn" onclick="goToToday()">今天</button>
                 <button class="settings-btn" onclick="openSettingsModal()">设置</button>
             </div>
         </div>
@@ -446,6 +455,9 @@
             </table>
         </div>
         <div id="holidayStatus" class="holiday-status"></div>
+        <div style="text-align: center; margin: 10px 0;">
+            <button class="today-btn" onclick="goToToday()">今天</button>
+        </div>
         <div class="other-values">
             <div class="other-title" id="selectedDateTitle">📅 所选日期排班</div>
             <div class="other-grid" id="otherValuesGrid"></div>
