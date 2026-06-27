@@ -60,13 +60,26 @@
                 android:layout_marginBottom="8dp"/>
 
             <TextView
+                android:id="@+id/tv_contact"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/contact_text"
                 android:textSize="16sp"
                 android:textColor="#1f2d3d"
                 android:layout_marginBottom="8dp"
-                android:textIsSelectable="true"/>
+                android:clickable="true"
+                android:focusable="true"/>
+
+            <TextView
+                android:id="@+id/tv_email"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/email_text"
+                android:textSize="16sp"
+                android:textColor="#1f2d3d"
+                android:layout_marginBottom="8dp"
+                android:clickable="true"
+                android:focusable="true"/>
 
             <TextView
                 android:layout_width="wrap_content"

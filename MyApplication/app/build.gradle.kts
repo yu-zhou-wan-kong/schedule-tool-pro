@@ -14,8 +14,8 @@ android {
         applicationId = "com.example.myapplication"
         minSdk = 24
         targetSdk = 36
-        versionCode = 25
-        versionName = "1.5.0"
+        versionCode = 26
+        versionName = "1.6.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -42,6 +42,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation(libs.photoview)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

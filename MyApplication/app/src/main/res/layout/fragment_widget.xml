@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#f0f2f5">
+
+    <!-- 容器 1: 选项列表 -->
+    <ScrollView
+        android:id="@+id/scroll_options"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:paddingTop="36dp"
+            android:paddingBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="小组件"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="#1f2d3d"
+                android:layout_marginBottom="16dp" />
+
+            <LinearLayout
+                android:id="@+id/options_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- 容器 2: 图片详情 -->
+    <LinearLayout
+        android:id="@+id/layout_image_detail"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingTop="20dp"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/btn_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="← 返回"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:textSize="15sp"
+            android:textColor="#0077ff"
+            android:layout_margin="8dp" />
+
+        <com.github.chrisbanes.photoview.PhotoView
+            android:id="@+id/widget_image"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:scaleType="fitCenter" />
+    </LinearLayout>
+
+</FrameLayout>

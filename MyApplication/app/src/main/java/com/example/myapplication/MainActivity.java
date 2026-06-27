@@ -190,19 +190,34 @@ public class MainActivity extends AppCompatActivity {
 
                                 installApk(fileUri);
 
-                                // ★ 新增：延时自动删除安装包
-                                final Uri finalInstallUri = fileUri;
-                                mHandler.postDelayed(() -> {
-                                    try {
-                                        File apkFile = new File(finalInstallUri.getPath());
-                                        if (apkFile.exists()) {
-                                            boolean deleted = apkFile.delete();
-                                            Log.d("Update", "删除安装包 " + (deleted ? "成功" : "失败"));
+//                                // ★ 新增：延时自动删除安装包
+//                                final Uri finalInstallUri = fileUri;
+//                                mHandler.postDelayed(() -> {
+//                                    try {
+//                                        File apkFile = new File(finalInstallUri.getPath());
+//                                        if (apkFile.exists()) {
+//                                            boolean deleted = apkFile.delete();
+//                                            Log.d("Update", "删除安装包 " + (deleted ? "成功" : "失败"));
+//                                        }
+//                                    } catch (Exception e) {
+//                                        Log.e("Update", "删除安装包异常", e);
+//                                    }
+//                                }, 10000); // 10秒后删除
+
+                                // ★ 延时自动删除安装包（使用 DownloadManager.remove）
+                                if (mDownloadId != -1) {
+                                    mHandler.postDelayed(() -> {
+                                        try {
+                                            DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+                                            // 移除下载任务和文件
+                                            downloadManager.remove(mDownloadId);
+                                            Log.d("Update", "已通过 DownloadManager 删除安装包，ID: " + mDownloadId);
+                                            mDownloadId = -1;
+                                        } catch (Exception e) {
+                                            Log.e("Update", "删除安装包异常", e);
                                         }
-                                    } catch (Exception e) {
-                                        Log.e("Update", "删除安装包异常", e);
-                                    }
-                                }, 10000); // 10秒后删除
+                                    }, 100000);
+                                }
 
                                 cursor.close();
                                 return;
@@ -281,6 +296,8 @@ public class MainActivity extends AppCompatActivity {
 
             if (itemId == R.id.navigation_home) {
                 selectedFragment = new HomeFragment();
+            } else if (itemId == R.id.navigation_widget) {
+                selectedFragment = new WidgetFragment();
             } else if (itemId == R.id.navigation_about) {
                 selectedFragment = new AboutFragment();
             }
@@ -302,6 +319,13 @@ public class MainActivity extends AppCompatActivity {
                     HomeFragment homeFragment = (HomeFragment) currentFragment;
                     if (homeFragment.canGoBack()) {
                         homeFragment.goBack();
+                        return;
+                    }
+                }
+                if (currentFragment instanceof WidgetFragment) {
+                    WidgetFragment widgetFragment = (WidgetFragment) currentFragment;
+                    if (widgetFragment.isShowingDetail()) {
+                        widgetFragment.goBackToList();
                         return;
                     }
                 }
