@@ -3,92 +3,209 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#f0f2f5"
-    android:fillViewport="true">   <!-- 关键：允许内部视图填充 ScrollView 高度 -->
+    android:fillViewport="true">
 
-    <!-- 外层容器，设置 gravity="center" 使其子视图居中 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center"
-        android:padding="16dp">    <!-- 原 ScrollView 的 padding 移到这里 -->
+        android:padding="16dp">
 
-        <!-- 原有的卡片布局 -->
+        <!-- 主卡片 -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:background="@drawable/card_bg"
-            android:padding="20dp"
+            android:padding="24dp"
             android:elevation="2dp">
+
+            <!-- ===== 顶部：应用图标 + 名称 + 版本 ===== -->
+            <ImageView
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="12dp"
+                android:src="@mipmap/ic_launcher"
+                android:contentDescription="@string/about_app_name" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
                 android:text="@string/about_app_name"
                 android:textSize="20sp"
                 android:textColor="#1f2d3d"
-                android:textStyle="bold"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="16dp"/>
+                android:textStyle="bold" />
 
+            <TextView
+                android:id="@+id/tv_version"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp"
+                android:text="@string/about_version"
+                android:textSize="14sp"
+                android:textColor="#888888" />
+
+            <!-- ===== 分割线 ===== -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:background="#e0e0e0" />
+
+            <!-- ===== 应用简介 ===== -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="关于应用"
                 android:textSize="16sp"
                 android:textColor="#1f2d3d"
-                android:textStyle="bold"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:text="@string/about_app_intro"
+                android:textSize="15sp"
+                android:textColor="#555555"
+                android:lineSpacingExtra="5dp" />
+
+            <!-- ===== 分割线 ===== -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
                 android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:background="#e0e0e0" />
+
+            <!-- ===== 联系信息 ===== -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="联系信息"
+                android:textSize="16sp"
+                android:textColor="#1f2d3d"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp" />
+
+            <!-- 作者 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="👤"
+                    android:textSize="16sp"
+                    android:layout_marginEnd="10dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/author_text"
+                    android:textSize="15sp"
+                    android:textColor="#333333" />
+            </LinearLayout>
+
+            <!-- 项目地址 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🔗"
+                    android:textSize="16sp"
+                    android:layout_marginEnd="10dp" />
+
+                <TextView
+                    android:id="@+id/tv_contact"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/contact_text"
+                    android:textSize="15sp"
+                    android:textColor="#1976d2"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+
+            <!-- 邮箱 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="4dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📧"
+                    android:textSize="16sp"
+                    android:layout_marginEnd="10dp" />
+
+                <TextView
+                    android:id="@+id/tv_email"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/email_text"
+                    android:textSize="15sp"
+                    android:textColor="#1976d2"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+
+            <!-- ===== 分割线 ===== -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:background="#e0e0e0" />
+
+            <!-- ===== 底部信息 ===== -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/source_text"
+                android:textSize="13sp"
+                android:textColor="#999999"
                 android:layout_marginBottom="8dp" />
 
             <TextView
+                android:id="@+id/tv_oss"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/about_app_intro"
-                android:textSize="16sp"
-                android:textColor="#1f2d3d"
-                android:lineSpacingExtra="4dp"
-                android:layout_marginBottom="16dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/author_text"
-                android:textSize="16sp"
-                android:textColor="#1f2d3d"
-                android:layout_marginBottom="8dp"/>
-
-            <TextView
-                android:id="@+id/tv_contact"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/contact_text"
-                android:textSize="16sp"
-                android:textColor="#1f2d3d"
-                android:layout_marginBottom="8dp"
-                android:clickable="true"
-                android:focusable="true"/>
-
-            <TextView
-                android:id="@+id/tv_email"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/email_text"
-                android:textSize="16sp"
-                android:textColor="#1f2d3d"
-                android:layout_marginBottom="8dp"
-                android:clickable="true"
-                android:focusable="true"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/description_text"
+                android:text="@string/about_oss_title"
                 android:textSize="14sp"
+                android:textColor="#1976d2"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:textColor="#1f2d3d"
-                android:lineSpacingExtra="4dp"/>
+                android:text="@string/description_text"
+                android:textSize="13sp"
+                android:textColor="#999999"
+                android:lineSpacingExtra="4dp" />
 
         </LinearLayout>
     </LinearLayout>

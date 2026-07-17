@@ -12,4 +12,7 @@
         依赖个人维护，每年更新节假日数据。
         主要是想做一个简单、没有广告的排班表应用。后续也许会更新更多功能。</string>
     <string name="email_text">邮箱：zhang_yuzhe@foxmail.com</string>
+    <string name="about_version">版本 %s</string>
+    <string name="about_oss_title">开源许可</string>
+    <string name="about_oss_content">本应用使用了以下开源库：\n\n- AppCompat (Apache 2.0)\n- Material Components (Apache 2.0)\n- PhotoView (Apache 2.0)\n- AndroidX Core (Apache 2.0)</string>
 </resources>
